@@ -22,6 +22,8 @@
 8. instalation bundle vue :
     1. composer require symfony/ux-vue
     2. npm install -D vue-loader --force
-9. 
-
+9. Ajout homeController
+10. Création des diagrames :
+    1. useCases
+    2. class
 

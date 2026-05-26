@@ -1,0 +1,62 @@
+classDiagram
+    class User {
+        +int id
+        +string email
+        +array roles
+        +string password
+    }
+
+    class Collector {
+        +calculateCollectionValue() float
+    }
+
+    class Moderator {
+        +validateReview(Avis avis) void
+        +deleteReview(Avis avis) void
+        +hideGame(Game game) void
+    }
+
+    class Administrator {
+        +generateRole(Utilisateur utilisateur) void
+    }
+
+    class Game {
+        +int id
+        +string title
+        +string console
+        +int releaseYear
+        +bool isHidden
+    }
+
+    class CollectionItem {
+        +int id
+        +string state
+        +float acquisitionPrice
+    }
+
+    class Review {
+        +int id
+        +string comment
+        +bool isValid
+        +datetime creeLe
+    }
+
+    class Exchange {
+        +int id
+        +string status
+        +datetime propositionDate
+        +verifyEligibility() bool
+    }
+
+    User <|-- Collector
+    User <|-- Moderator
+    User <|-- Administrator
+
+    Collector "1" -- "0..*" CollectionItem : have
+    Game "1" -- "0..*" CollectionItem : is associated to
+    Collector "1" -- "0..*" Review : write
+    Game "1" -- "0..*" Review : receives
+    
+    Collector "1" -- "0..*" Exchange : propose
+    Collector "1" -- "0..*" Exchange : receives
+    CollectionItem "1..*" -- "0..*" Exchange : concerns
