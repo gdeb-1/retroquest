@@ -23,3 +23,10 @@ restart: ## Restart the containers
 
 sh: ## Access the PHP container shell
 	$(EXEC) sh
+
+#Assets
+build-assets: ## Build the assets
+	$(EXEC) npm run build
+
+watch-assets: ## Watch the assets
+	$(EXEC) npm run watch
