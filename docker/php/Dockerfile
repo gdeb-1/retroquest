@@ -7,6 +7,7 @@ RUN apk add --no-cache \
     libzip-dev \
     unzip \
     zip \
+    npm \
     && docker-php-ext-install \
     intl \
     opcache \
