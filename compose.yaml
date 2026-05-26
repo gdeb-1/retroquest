@@ -1,4 +1,27 @@
 services:
+  php:
+    build:
+      context: .
+      dockerfile: ./docker/php/Dockerfile
+    volumes:
+      - ./retroquest:/var/www/html:rw
+    depends_on:
+      - database
+    networks:
+      - retroquest-network
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./retroquest:/var/www/html:ro
+    depends_on:
+      - php
+    networks:
+      - retroquest-network
+
   database:
     image: mysql:8.0
     container_name: retroquest_mysql_db
@@ -11,6 +34,12 @@ services:
       - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
+    networks:
+      - retroquest-network
+
+networks:
+  retroquest-network:
+    driver: bridge
 
 volumes:
   db_data:
