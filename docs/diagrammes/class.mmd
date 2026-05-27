@@ -7,7 +7,7 @@ classDiagram
     }
 
     class Collector {
-        +calculateCollectionValue() float
+        +calculateCollectionValue() array[string => int]%%[currency => value]
     }
 
     class Moderator {
@@ -31,7 +31,10 @@ classDiagram
     class CollectionItem {
         +int id
         +string state
-        +float acquisitionPrice
+        %% acquisitionPrice always in cents.
+        +int acquisitionPrice
+        +string currency
+        +date acquisitionDate
     }
 
     class Review {
