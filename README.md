@@ -26,4 +26,8 @@
 10. Création des diagrames :
     1. useCases
     2. class
+11. Gestion connection db.
 
+## clef api rawg.io: 
+    7ed5cc4a22894491881a735919d2e539
+    https://api.rawg.io/docs/

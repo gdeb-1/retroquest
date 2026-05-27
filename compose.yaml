@@ -26,10 +26,10 @@ services:
     image: mysql:8.0
     container_name: retroquest_mysql_db
     environment:
-      MYSQL_ROOT_PASSWORD: root_password
-      MYSQL_DATABASE: symfony_db
-      MYSQL_USER: symfony_user
-      MYSQL_PASSWORD: symfony_password
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_password}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-retroquest}
+      MYSQL_USER: ${MYSQL_USER:-symfony_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-symfony_password}
     ports:
       - "3306:3306"
     volumes:
