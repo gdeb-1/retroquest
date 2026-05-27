@@ -2,9 +2,12 @@
 
 namespace App\DataFixtures;
 
+
 use App\Entity\CollectionItem;
 use App\Entity\Game;
 use App\Entity\User;
+use App\Enum\Currency;
+use App\Enum\CollectionItemStates;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
@@ -15,8 +18,8 @@ class CollectionItemFixtures extends Fixture implements DependentFixtureInterfac
 
     public function load(ObjectManager $manager): void
     {
-        $states = ['Mint', 'Good', 'Fair', 'Poor'];
-        $currencies = ['EUR', 'USD'];
+        $states = CollectionItemStates::cases();
+        $currencies = Currency::cases(); 
 
         for ($i = 0; $i < 50; $i++) {
             $item = new CollectionItem();

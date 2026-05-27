@@ -5,6 +5,7 @@ namespace App\DataFixtures;
 use App\Entity\Exchange;
 use App\Entity\CollectionItem;
 use App\Entity\User;
+use App\Enum\ExchangeStatuses;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
@@ -13,7 +14,7 @@ class ExchangeFixtures extends Fixture implements DependentFixtureInterface
 {
     public function load(ObjectManager $manager): void
     {
-        $statuses = ['pending', 'accepted', 'rejected', 'cancelled'];
+        $statuses = ExchangeStatuses::cases();
 
         // 1. Group collection items by collector's email
         $itemsByCollector = [];

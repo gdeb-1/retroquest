@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Enum\ExchangeStatuses;
 use App\Repository\ExchangeRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -15,8 +16,8 @@ class Exchange
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $status = null;
+    #[ORM\Column(type:'string', enumType: ExchangeStatuses::class, length: 255)]
+    private ?ExchangeStatuses $status = null;
 
     #[ORM\Column]
     private ?\DateTime $propositionDate = null;
@@ -45,12 +46,12 @@ class Exchange
         return $this->id;
     }
 
-    public function getStatus(): ?string
+    public function getStatus(): ?ExchangeStatuses
     {
         return $this->status;
     }
 
-    public function setStatus(string $status): static
+    public function setStatus(ExchangeStatuses $status): static
     {
         $this->status = $status;
 

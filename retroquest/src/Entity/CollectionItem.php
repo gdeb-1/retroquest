@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use App\Enum\Currency;
+use App\Enum\CollectionItemStates;
 use App\Repository\CollectionItemRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -16,14 +18,14 @@ class CollectionItem
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $state = null;
+    #[ORM\Column(type:'string', enumType: CollectionItemStates::class, length: 255)]
+    private ?CollectionItemStates $state = null;
 
     #[ORM\Column]
     private ?int $acquisitionPrice = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $currency = null;
+    #[ORM\Column(type:'string', enumType: Currency::class, length: 255)]
+    private ?Currency $currency = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     private ?\DateTime $acquisitionDate = null;
@@ -52,12 +54,12 @@ class CollectionItem
         return $this->id;
     }
 
-    public function getState(): ?string
+    public function getState(): ?CollectionItemStates
     {
         return $this->state;
     }
 
-    public function setState(string $state): static
+    public function setState(CollectionItemStates $state): static
     {
         $this->state = $state;
 
@@ -76,12 +78,12 @@ class CollectionItem
         return $this;
     }
 
-    public function getCurrency(): ?string
+    public function getCurrency(): Currency
     {
         return $this->currency;
     }
 
-    public function setCurrency(string $currency): static
+    public function setCurrency(Currency $currency): static
     {
         $this->currency = $currency;
 

@@ -31,6 +31,8 @@
 13. modification des entitées pour créer les relations
 14. mise en place du security.yaml
 15. création des fixtures
+16. mise en place des enums
+17. 
 
 ## clef api rawg.io: 
     7ed5cc4a22894491881a735919d2e539

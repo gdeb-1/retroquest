@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\GameRepository;
+use App\Enum\GameConsoles;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -24,8 +25,8 @@ class Game
     #[ORM\Column]
     private ?bool $isHidden = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $console = null;
+    #[ORM\Column(type: 'string', enumType: GameConsoles::class, length: 255)]
+    private ?GameConsoles $console = null;
 
     /**
      * @var Collection<int, CollectionItem>
@@ -86,12 +87,12 @@ class Game
         return $this;
     }
 
-    public function getConsole(): ?string
+    public function getConsole(): ?GameConsoles
     {
         return $this->console;
     }
 
-    public function setConsole(string $console): static
+    public function setConsole(GameConsoles $console): static
     {
         $this->console = $console;
 

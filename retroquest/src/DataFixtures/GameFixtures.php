@@ -3,6 +3,7 @@
 namespace App\DataFixtures;
 
 use App\Entity\Game;
+use App\Enum\GameConsoles;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 
@@ -12,7 +13,7 @@ class GameFixtures extends Fixture
 
     public function load(ObjectManager $manager): void
     {
-        $consoles = ['NES', 'SNES', 'Sega Genesis', 'Nintendo 64', 'PlayStation', 'Game Boy', 'Sega Dreamcast', 'PlayStation 2'];
+        $consoles = GameConsoles::cases();
         
         $titles = [
             'Super Mario Bros.', 'Sonic the Hedgehog', 'The Legend of Zelda', 'Metroid', 'Castlevania',
