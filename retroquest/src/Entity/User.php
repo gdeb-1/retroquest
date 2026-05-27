@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -30,6 +32,38 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     #[ORM\Column]
     private ?string $password = null;
+
+    /**
+     * @var Collection<int, CollectionItem>
+     */
+    #[ORM\OneToMany(targetEntity: CollectionItem::class, mappedBy: 'collector', orphanRemoval: true)]
+    private Collection $collectionItems;
+
+    /**
+     * @var Collection<int, Review>
+     */
+    #[ORM\OneToMany(targetEntity: Review::class, mappedBy: 'author', orphanRemoval: true)]
+    private Collection $reviews;
+
+    /**
+     * @var Collection<int, Exchange>
+     */
+    #[ORM\OneToMany(targetEntity: Exchange::class, mappedBy: 'proposer', orphanRemoval: true)]
+    private Collection $proposedExchanges;
+
+    /**
+     * @var Collection<int, Exchange>
+     */
+    #[ORM\OneToMany(targetEntity: Exchange::class, mappedBy: 'receiver', orphanRemoval: true)]
+    private Collection $receivedExchanges;
+
+    public function __construct()
+    {
+        $this->collectionItems = new ArrayCollection();
+        $this->reviews = new ArrayCollection();
+        $this->proposedExchanges = new ArrayCollection();
+        $this->receivedExchanges = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -110,5 +144,125 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function eraseCredentials(): void
     {
         // @deprecated, to be removed when upgrading to Symfony 8
+    }
+
+    /**
+     * @return Collection<int, CollectionItem>
+     */
+    public function getCollectionItems(): Collection
+    {
+        return $this->collectionItems;
+    }
+
+    public function addCollectionItem(CollectionItem $collectionItem): static
+    {
+        if (!$this->collectionItems->contains($collectionItem)) {
+            $this->collectionItems->add($collectionItem);
+            $collectionItem->setCollector($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCollectionItem(CollectionItem $collectionItem): static
+    {
+        if ($this->collectionItems->removeElement($collectionItem)) {
+            // set the owning side to null (unless already changed)
+            if ($collectionItem->getCollector() === $this) {
+                $collectionItem->setCollector(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Review>
+     */
+    public function getReviews(): Collection
+    {
+        return $this->reviews;
+    }
+
+    public function addReview(Review $review): static
+    {
+        if (!$this->reviews->contains($review)) {
+            $this->reviews->add($review);
+            $review->setAuthor($this);
+        }
+
+        return $this;
+    }
+
+    public function removeReview(Review $review): static
+    {
+        if ($this->reviews->removeElement($review)) {
+            // set the owning side to null (unless already changed)
+            if ($review->getAuthor() === $this) {
+                $review->setAuthor(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Exchange>
+     */
+    public function getProposedExchanges(): Collection
+    {
+        return $this->proposedExchanges;
+    }
+
+    public function addProposedExchange(Exchange $proposedExchange): static
+    {
+        if (!$this->proposedExchanges->contains($proposedExchange)) {
+            $this->proposedExchanges->add($proposedExchange);
+            $proposedExchange->setProposer($this);
+        }
+
+        return $this;
+    }
+
+    public function removeProposedExchange(Exchange $proposedExchange): static
+    {
+        if ($this->proposedExchanges->removeElement($proposedExchange)) {
+            // set the owning side to null (unless already changed)
+            if ($proposedExchange->getProposer() === $this) {
+                $proposedExchange->setProposer(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Exchange>
+     */
+    public function getReceivedExchanges(): Collection
+    {
+        return $this->receivedExchanges;
+    }
+
+    public function addReceivedExchange(Exchange $receivedExchange): static
+    {
+        if (!$this->receivedExchanges->contains($receivedExchange)) {
+            $this->receivedExchanges->add($receivedExchange);
+            $receivedExchange->setReceiver($this);
+        }
+
+        return $this;
+    }
+
+    public function removeReceivedExchange(Exchange $receivedExchange): static
+    {
+        if ($this->receivedExchanges->removeElement($receivedExchange)) {
+            // set the owning side to null (unless already changed)
+            if ($receivedExchange->getReceiver() === $this) {
+                $receivedExchange->setReceiver(null);
+            }
+        }
+
+        return $this;
     }
 }
