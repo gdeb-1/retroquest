@@ -27,6 +27,10 @@
     1. useCases
     2. class
 11. Gestion connection db.
+12. création des entitées
+13. modification des entitées pour créer les relations
+14. mise en place du security.yaml
+15. création des fixtures
 
 ## clef api rawg.io: 
     7ed5cc4a22894491881a735919d2e539
