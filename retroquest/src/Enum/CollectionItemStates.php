@@ -2,7 +2,7 @@
 
 namespace App\Enum;
 
-enum States: string
+enum CollectionItemStates: string
 {
     case MINT = 'Mint';
     case GOOD = 'Good';
