@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\CollectionItem;
+use App\Entity\Game;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -16,28 +17,22 @@ class CollectionItemRepository extends ServiceEntityRepository
         parent::__construct($registry, CollectionItem::class);
     }
 
-    //    /**
-    //     * @return CollectionItem[] Returns an array of CollectionItem objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('c')
-    //            ->andWhere('c.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('c.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    /**
+     * @param Game[] $games
+     * @return array
+     */
+    public function findAveragePricesForGames(array $games): array
+    {
+        if (empty($games)) {
+            return [];
+        }
 
-    //    public function findOneBySomeField($value): ?CollectionItem
-    //    {
-    //        return $this->createQueryBuilder('c')
-    //            ->andWhere('c.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        return $this->createQueryBuilder('c')
+            ->select('IDENTITY(c.game) as gameId', 'c.currency as currency', 'AVG(c.acquisitionPrice) as averagePrice')
+            ->andWhere('c.game IN (:games)')
+            ->setParameter('games', $games)
+            ->groupBy('c.game', 'c.currency')
+            ->getQuery()
+            ->getResult();
+    }
 }

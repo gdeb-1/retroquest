@@ -16,28 +16,25 @@ class GameRepository extends ServiceEntityRepository
         parent::__construct($registry, Game::class);
     }
 
-    //    /**
-    //     * @return Game[] Returns an array of Game objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('g')
-    //            ->andWhere('g.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('g.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    /**
+     * @return array
+     */
+    public function findPopularGames(int $days = 30, int $limit = 12): array
+    {
+        $dateLimit = new \DateTime(sprintf('-%d days', $days));
 
-    //    public function findOneBySomeField($value): ?Game
-    //    {
-    //        return $this->createQueryBuilder('g')
-    //            ->andWhere('g.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        return $this->createQueryBuilder('g')
+            ->select('g', 'COUNT(c.id) as additionsCount')
+            ->innerJoin('g.collectionItems', 'c')
+            ->andWhere('c.acquisitionDate >= :dateLimit')
+            ->andWhere('g.isHidden = :isHidden')
+            ->setParameter('dateLimit', $dateLimit)
+            ->setParameter('isHidden', false)
+            ->groupBy('g.id')
+            ->orderBy('additionsCount', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
 }
+
