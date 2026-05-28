@@ -14,11 +14,13 @@
             {% for game in popularGames %}
                 <div class="col">
                     <div {{ vue_component('GameCard', {
+                        id: game.id,
                         title: game.title,
                         console: game.console,
                         releaseYear: game.releaseYear,
                         additionsCount: game.additionsCount,
-                        averagePrices: game.averagePrices
+                        averagePrices: game.averagePrices,
+                        description: game.description
                     }) }}></div>
                 </div>
             {% endfor %}

@@ -4,12 +4,19 @@ namespace App\Controller;
 
 use App\Repository\GameRepository;
 use App\Repository\CollectionItemRepository;
+use App\Service\RawgService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Contracts\Cache\CacheInterface;
+use Symfony\Contracts\Cache\ItemInterface;
 
 class HomeController extends AbstractController
 {
+    public function __construct(
+        private RawgService $rawgService,
+        private CacheInterface $cache
+    ) {}
     #[Route('/', name: 'app_home')]
     public function index(GameRepository $gameRepository, CollectionItemRepository $collectionItemRepository): Response
     {
@@ -47,6 +54,11 @@ class HomeController extends AbstractController
             $game = $row[0];
             $gameId = $game->getId();
             
+            $description = $this->cache->get('game_description_' . $gameId, function (ItemInterface $item) use ($game) {
+                $item->expiresAfter(3600 * 24 * 30);
+                return $this->rawgService->fetchDescription($game->getTitle());
+            });
+            
             $popularGames[] = [
                 'id' => $gameId,
                 'title' => $game->getTitle(),
@@ -54,6 +66,7 @@ class HomeController extends AbstractController
                 'releaseYear' => $game->getReleaseYear(),
                 'additionsCount' => (int) $row['additionsCount'],
                 'averagePrices' => $averagePricesByGame[$gameId] ?? [],
+                'description' => $description,
             ];
         }
         return $popularGames;

@@ -41,8 +41,9 @@
 20. mise en place du formulaire de connection
 21. mise en place bootstrap + style formulaires connetion / inscription.
 22. mise en place navbar + auth button.
-23. 
-
+23. netoyage css GameCard
+24. Ajout de la description aux GameCards (depuis RAWG)
+25. 
 
 
 ## clef api rawg.io: 
