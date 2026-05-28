@@ -3,29 +3,30 @@
 {% block title %}Price Guide - Retroquest{% endblock %}
 
 {% block body %}
-<div class="container">
-    <div class="header">
-        <h1>Retroquest</h1>
-        <p>Price Guide des jeux populaires du moment</p>
+<div class="container py-4">
+    <div class="mb-5 text-center text-md-start">
+        <h1 class="display-5 fw-bold text-dark mb-2">Retroquest</h1>
+        <p class="lead text-secondary">Price Guide des jeux populaires du moment</p>
     </div>
 
     {% if popularGames is not empty %}
-        <div class="grid-layout">
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
             {% for game in popularGames %}
-                <div {{ vue_component('GameCard', {
-                    title: game.title,
-                    console: game.console,
-                    releaseYear: game.releaseYear,
-                    additionsCount: game.additionsCount,
-                    averagePrices: game.averagePrices
-                }) }}></div>
+                <div class="col">
+                    <div {{ vue_component('GameCard', {
+                        title: game.title,
+                        console: game.console,
+                        releaseYear: game.releaseYear,
+                        additionsCount: game.additionsCount,
+                        averagePrices: game.averagePrices
+                    }) }}></div>
+                </div>
             {% endfor %}
         </div>
     {% else %}
-        <div class="empty-state">
-            <p>Aucun jeu populaire n'a été ajouté aux collections au cours des 30 derniers jours.</p>
+        <div class="empty-state text-center py-5 border border-dashed rounded-3 bg-white">
+            <p class="mb-0 fs-5">Aucun jeu populaire n'a été ajouté aux collections au cours des 30 derniers jours.</p>
         </div>
     {% endif %}
 </div>
 {% endblock %}
-
