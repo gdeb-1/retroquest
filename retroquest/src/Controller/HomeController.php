@@ -54,10 +54,22 @@ class HomeController extends AbstractController
             $game = $row[0];
             $gameId = $game->getId();
             
-            $description = $this->cache->get('game_description_' . $gameId, function (ItemInterface $item) use ($game) {
+            $cacheKey = 'game_description_' . $gameId;
+            $description = $this->cache->get($cacheKey, function (ItemInterface $item) use ($game) {
                 $item->expiresAfter(3600 * 24 * 30);
                 return $this->rawgService->fetchDescription($game->getTitle());
             });
+            
+            if ($description === null) {
+                $this->cache->delete($cacheKey);
+                $description = $this->rawgService->fetchDescription($game->getTitle());
+                if ($description !== null) {
+                    $this->cache->get($cacheKey, function (ItemInterface $item) use ($description) {
+                        $item->expiresAfter(3600 * 24 * 30);
+                        return $description;
+                    });
+                }
+            }
             
             $popularGames[] = [
                 'id' => $gameId,
