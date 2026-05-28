@@ -1,20 +1,31 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello Vue!{% endblock %}
+{% block title %}Price Guide - Retroquest{% endblock %}
 
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font-family: sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
-
-<div class="example-wrapper">
-    <h1>Welcome to Retroquest!</h1>
-
-    <p>This page is rendered by a Symfony Controller.</p>
-    
-    <h2>Vue Component (Hello.vue)</h2>
-    <div {{ vue_component('Hello', { name: 'Symfony UX Vue' }) }} style="border: 2px dashed #ccc; padding: 20px; border-radius: 8px; margin-top: 10px;">
+<div class="container">
+    <div class="header">
+        <h1>Retroquest</h1>
+        <p>Price Guide des jeux populaires du moment</p>
     </div>
+
+    {% if popularGames is not empty %}
+        <div class="grid-layout">
+            {% for game in popularGames %}
+                <div {{ vue_component('GameCard', {
+                    title: game.title,
+                    console: game.console,
+                    releaseYear: game.releaseYear,
+                    additionsCount: game.additionsCount,
+                    averagePrices: game.averagePrices
+                }) }}></div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <p>Aucun jeu populaire n'a été ajouté aux collections au cours des 30 derniers jours.</p>
+        </div>
+    {% endif %}
 </div>
 {% endblock %}
+

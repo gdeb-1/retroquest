@@ -32,7 +32,12 @@
 14. mise en place du security.yaml
 15. création des fixtures
 16. mise en place des enums
-17. 
+17. retrait enum gameConsoles -> les collectioneurs définise la console (donnée libre)
+18. implémentation Price Guide
+    1. Préparation des querry
+    2. Récupération et envoi des donné a twig
+    3. utilisation des donnée avec vue js
+
 
 ## clef api rawg.io: 
     7ed5cc4a22894491881a735919d2e539
