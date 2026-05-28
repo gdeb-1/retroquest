@@ -37,6 +37,9 @@
     1. Préparation des querry
     2. Récupération et envoi des donné a twig
     3. utilisation des donnée avec vue js
+19. Ajout utils dans make pour gestion base de donnée
+20. mise en place du formulaire de connection
+
 
 
 ## clef api rawg.io: 
