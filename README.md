@@ -39,6 +39,9 @@
     3. utilisation des donnée avec vue js
 19. Ajout utils dans make pour gestion base de donnée
 20. mise en place du formulaire de connection
+21. mise en place bootstrap + style formulaires connetion / inscription.
+22. mise en place navbar + auth button.
+23. 
 
 
 

@@ -3,5 +3,13 @@
         <a href="{{ path('app_home') }}" class="navbar-brand d-flex align-items-center fw-bold text-dark fs-4 gap-2">
             <span class="logo-icon">🎮</span> Retroquest
         </a>
+        <div class="ms-auto">
+            <div {{ vue_component('AuthButton', {
+                isLoggedIn: app.user is not null,
+                loginUrl: path('app_login'),
+                registerUrl: path('app_register'),
+                logoutUrl: path('app_logout')
+            }) }}></div>
+        </div>
     </div>
 </nav>
