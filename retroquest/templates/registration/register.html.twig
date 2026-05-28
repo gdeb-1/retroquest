@@ -1,19 +1,31 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Register{% endblock %}
+{% block title %}Inscription{% endblock %}
 
 {% block body %}
-    <h1>Register</h1>
+<div class="container py-3">
+    <h1 class="h4 mb-4 fw-bold text-center">Inscription</h1>
 
-    {{ form_errors(registrationForm) }}
+    {% if not registrationForm.vars.valid %}
+        <div class="alert alert-danger mb-3">
+            {{ form_errors(registrationForm) }}
+        </div>
+    {% endif %}
 
     {{ form_start(registrationForm) }}
-        {{ form_row(registrationForm.email) }}
-        {{ form_row(registrationForm.plainPassword, {
-            label: 'Password'
+        {{ form_row(registrationForm.email, {
+            label: 'Adresse email',
+            attr: { placeholder: 'nom@exemple.com' }
         }) }}
-        {{ form_row(registrationForm.agreeTerms) }}
+        {{ form_row(registrationForm.plainPassword, {
+            label: 'Mot de passe',
+            attr: { placeholder: '••••••••' }
+        }) }}
+        {{ form_row(registrationForm.agreeTerms, {
+            label: "J'accepte les conditions d'utilisation"
+        }) }}
 
-        <button type="submit" class="btn">Register</button>
+        <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold mt-3">S'inscrire</button>
     {{ form_end(registrationForm) }}
+</div>
 {% endblock %}
