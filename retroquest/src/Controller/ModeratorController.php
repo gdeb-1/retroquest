@@ -22,4 +22,14 @@ class ModeratorController extends AbstractController
     {
         return $this->render('moderator/hello_moderator.html.twig');
     }
+
+    #[Route('/moderator/games', name: 'app_moderator_games', options: ['expose' => true])]
+    public function games(GameRepository $gameRepository): Response
+    {
+        $games = $gameRepository->findAll();
+
+        return $this->render('moderator/games.html.twig', [
+            'games' => $games,
+        ]);
+    }
 }

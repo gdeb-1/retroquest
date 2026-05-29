@@ -1,0 +1,36 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des jeux - Modérateur{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 fw-bold mb-0">Gestion du catalogue de jeux</h1>
+    </div>
+
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label }} alert-dismissible fade show shadow-sm" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    {% set gamesData = [] %}
+    {% for game in games %}
+        {% set gamesData = gamesData|merge([{
+            id: game.id,
+            title: game.title,
+            console: game.console,
+            releaseYear: game.releaseYear,
+            isHidden: game.isHidden,
+            csrfToken: csrf_token('toggle_visibility_' ~ game.id)
+        }]) %}
+    {% endfor %}
+
+    <div {{ vue_component('ModeratorGames', {
+        games: gamesData
+    }) }}></div>
+</div>
+{% endblock %}
