@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\CollectionItem;
 use App\Entity\Game;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -45,6 +46,20 @@ class CollectionItemRepository extends ServiceEntityRepository
             ->select('c', 'g', 'col')
             ->join('c.game', 'g')
             ->join('c.collector', 'col')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return CollectionItem[]
+     */
+    public function findByCollectorWithGame(User $collector): array
+    {
+        return $this->createQueryBuilder('c')
+            ->select('c', 'g')
+            ->join('c.game', 'g')
+            ->andWhere('c.collector = :collector')
+            ->setParameter('collector', $collector)
             ->getQuery()
             ->getResult();
     }
