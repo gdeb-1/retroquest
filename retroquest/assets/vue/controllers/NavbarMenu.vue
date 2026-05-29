@@ -42,7 +42,7 @@
     </template>
 
     <template v-if="isAdmin">
-      <a class="nav-link text-secondary fw-medium ms-3" :href="getRoute('app_administrator_hello_administrator')">Gérer les droits de l'utilisateur</a>
+      <a class="nav-link text-secondary fw-medium ms-3" :href="getRoute('app_administrator_users')">Gérer les droits de l'utilisateur</a>
     </template>
   </div>
 </template>

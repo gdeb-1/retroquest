@@ -22,4 +22,14 @@ class AdministratorController extends AbstractController
     {
         return $this->render('administrator/hello_administrator.html.twig');
     }
+
+    #[Route('/administrator/users', name: 'app_administrator_users', options: ['expose' => true])]
+    public function users(EntityManagerInterface $entityManager): Response
+    {
+        $users = $entityManager->getRepository(User::class)->findAll();
+
+        return $this->render('administrator/users.html.twig', [
+            'users' => $users,
+        ]);
+    }
 }
