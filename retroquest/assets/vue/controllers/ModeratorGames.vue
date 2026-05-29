@@ -89,6 +89,19 @@ const columns = [
         ? '<span class="badge bg-danger">Masqué</span>' 
         : '<span class="badge bg-success">Visible</span>';
     }
+  },
+  {
+    data: null,
+    title: 'Actions',
+    orderable: false,
+    className: 'text-end pe-4',
+    render: (data, type, row) => {
+      if (row.isHidden) {
+        return `<button class="btn btn-sm btn-outline-success btn-toggle-visibility" data-id="${row.id}"><i class="bi bi-eye"></i> Rendre visible</button>`;
+      } else {
+        return `<button class="btn btn-sm btn-outline-warning btn-toggle-visibility" data-id="${row.id}"><i class="bi bi-eye-slash"></i> Masquer</button>`;
+      }
+    }
   }
 ];
 
@@ -102,6 +115,37 @@ const options = {
     zeroRecords: "Aucun résultat trouvé"
   },
   order: [[0, 'asc']]
+};
+
+const handleTableClick = (event) => {
+  const button = event.target.closest('.btn-toggle-visibility');
+  if (!button) return;
+  const gameId = button.dataset.id;
+  const game = props.games.find(g => g.id == gameId);
+  if (game) {
+    gameToToggle.value = game;
+  }
+};
+
+const confirmToggle = () => {
+  if (!gameToToggle.value) return;
+
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = path('app_moderator_toggle_game_visibility', { id: gameToToggle.value.id });
+
+  const csrfInput = document.createElement('input');
+  csrfInput.type = 'hidden';
+  csrfInput.name = '_token';
+  csrfInput.value = gameToToggle.value.csrfToken;
+  form.appendChild(csrfInput);
+
+  document.body.appendChild(form);
+  form.submit();
+};
+
+const path = (name, params = {}) => {
+  return Routing.generate(name, params);
 };
 </script>
 

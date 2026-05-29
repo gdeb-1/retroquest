@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use \App\Entity\Game;
 use App\Entity\CollectionItem;
 use App\Form\CollectionItemType;
 use App\Repository\CollectionItemRepository;
@@ -31,5 +32,26 @@ class ModeratorController extends AbstractController
         return $this->render('moderator/games.html.twig', [
             'games' => $games,
         ]);
+    }
+
+    #[Route('/moderator/game/toggle-visibility/{id}', name: 'app_moderator_toggle_game_visibility', methods: ['POST'], options: ['expose' => true])]
+    public function toggleGameVisibility(
+        Game $game,
+        Request $request,
+        EntityManagerInterface $entityManager
+    ): Response {
+        $token = $request->request->get('_token');
+        if (!$this->isCsrfTokenValid('toggle_visibility_' . $game->getId(), $token)) {
+            $this->addFlash('error', 'Le jeton de sécurité est invalide. Veuillez réessayer.');
+            return $this->redirectToRoute('app_moderator_games');
+        }
+
+        $game->setIsHidden(!$game->isHidden());
+        $entityManager->flush();
+
+        $status = $game->isHidden() ? 'masquée' : 'visible';
+        $this->addFlash('success', sprintf('La fiche du jeu "%s" est maintenant %s.', $game->getTitle(), $status));
+
+        return $this->redirectToRoute('app_moderator_games');
     }
 }
