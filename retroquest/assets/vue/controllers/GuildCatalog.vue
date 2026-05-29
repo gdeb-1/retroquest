@@ -6,23 +6,7 @@
         :columns="columns" 
         :options="options" 
         class="table table-striped table-hover border align-middle w-100"
-      >
-        <template #column-state="props">
-          <span class="badge" :class="getStateBadgeClass(props.cellData)">{{ props.cellData }}</span>
-        </template>
-
-        <template #column-price="props">
-          <span class="fw-semibold text-dark">{{ formatPrice(props.cellData, props.rowData.currency) }}</span>
-        </template>
-
-        <template #column-date="props">
-          <span>{{ formatDate(props.cellData) }}</span>
-        </template>
-
-        <template #column-collector="props">
-          <span class="text-secondary small">{{ props.cellData }}</span>
-        </template>
-      </DataTable>
+      />
     </div>
   </div>
 </template>
@@ -43,11 +27,7 @@ defineProps({
 const columns = [
   { data: 'title', title: 'Titre' },
   { data: 'console', title: 'Console' },
-  { data: 'releaseYear', title: 'Année de sortie' },
-  { data: 'state', title: 'État', name: 'state' },
-  { data: 'acquisitionPrice', title: "Prix d'acquisition", name: 'price' },
-  { data: 'acquisitionDate', title: "Date d'acquisition", name: 'date' },
-  { data: 'collector', title: 'Collectionneur', name: 'collector' }
+  { data: 'releaseYear', title: 'Année de sortie' }
 ];
 
 const options = {
@@ -67,36 +47,6 @@ const options = {
   },
   pageLength: 10,
   order: [[0, 'asc']]
-};
-
-const getStateBadgeClass = (state) => {
-  switch (state) {
-    case 'Mint': return 'bg-success';
-    case 'Good': return 'bg-primary';
-    case 'Fair': return 'bg-warning text-dark';
-    case 'Poor': return 'bg-danger';
-    default: return 'bg-secondary';
-  }
-};
-
-const formatPrice = (price, currency) => {
-  const symbols = {
-    'EUR': '€',
-    'USD': '$',
-    'GBP': '£'
-  };
-  const symbol = symbols[currency] || currency;
-  return `${(price / 100).toFixed(2)} ${symbol}`;
-};
-
-const formatDate = (dateStr) => {
-  if (!dateStr) return 'N/A';
-  const date = new Date(dateStr);
-  return date.toLocaleDateString('fr-FR', {
-    year: 'numeric',
-    month: 'numeric',
-    day: 'numeric'
-  });
 };
 </script>
 

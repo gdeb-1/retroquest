@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Repository\CollectionItemRepository;
+use App\Repository\GameRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -13,22 +14,17 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class CollectorController extends AbstractController
 {
     #[Route('/collector/GuildCatalog', name: 'app_collector_guild_catalog', options: ['expose' => true])]
-    public function guildCatalog(CollectionItemRepository $collectionItemRepository): Response
+    public function guildCatalog(GameRepository $gameRepository): Response
     {
-        $collectionItems = $collectionItemRepository->findAllWithGameAndCollector();
+        $games = $gameRepository->findBy(['isHidden' => false]);
 
         $catalogData = [];
-        foreach ($collectionItems as $item) {
+        foreach ($games as $game) {
             $catalogData[] = [
-                'id' => $item->getId(),
-                'title' => $item->getGame()->getTitle(),
-                'console' => $item->getGame()->getConsole(),
-                'releaseYear' => $item->getGame()->getReleaseYear(),
-                'state' => $item->getState()->value,
-                'acquisitionPrice' => $item->getAcquisitionPrice(),
-                'currency' => $item->getCurrency()->value,
-                'acquisitionDate' => $item->getAcquisitionDate() ? $item->getAcquisitionDate()->format('Y-m-d') : null,
-                'collector' => $item->getCollector()->getEmail(),
+                'id' => $game->getId(),
+                'title' => $game->getTitle(),
+                'console' => $game->getConsole(),
+                'releaseYear' => $game->getReleaseYear(),
             ];
         }
 
