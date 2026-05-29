@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Ma collection - Retroquest{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+    <div {{ vue_component('MyCollection', {
+        items: collectionItemsData
+    }) }}></div>
+</div>
+{% endblock %}
