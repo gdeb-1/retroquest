@@ -35,4 +35,17 @@ class CollectionItemRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * @return CollectionItem[]
+     */
+    public function findAllWithGameAndCollector(): array
+    {
+        return $this->createQueryBuilder('c')
+            ->select('c', 'g', 'col')
+            ->join('c.game', 'g')
+            ->join('c.collector', 'col')
+            ->getQuery()
+            ->getResult();
+    }
 }

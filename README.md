@@ -43,7 +43,11 @@
 22. mise en place navbar + auth button.
 23. netoyage css GameCard
 24. Ajout de la description aux GameCards (depuis RAWG)
-25. 
+25. mise en place menu navigation. 
+    1. création composant vue
+    2. ajout route dynamiques
+26. Mise en place de GuildCatalog.
+27. 
 
 
 ## clef api rawg.io: 

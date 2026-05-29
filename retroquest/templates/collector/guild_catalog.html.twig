@@ -1,0 +1,16 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Catalogue de la Guilde - Retroquest{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+    <div class="mb-4 text-center text-md-start">
+        <h1 class="display-6 fw-bold text-dark mb-1">Catalogue de la Guilde</h1>
+        <p class="lead text-secondary fs-6">L'intégralité des jeux et consoles de la base de données globale</p>
+    </div>
+
+    <div {{ vue_component('GuildCatalog', {
+        catalogData: catalogData
+    }) }}></div>
+</div>
+{% endblock %}
