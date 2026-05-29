@@ -47,7 +47,11 @@
     1. création composant vue
     2. ajout route dynamiques
 26. Mise en place de GuildCatalog.
-27. 
+27. implémentation de maCollection
+28. correction de GuildCatalog => on affiche les jeu et non les itemCollection
+29. Implémentation du formulaire d'ajout d'item à maCollection
+30. correction des test et mise en place test ajout item à maCollection
+31. 
 
 
 ## clef api rawg.io: 
