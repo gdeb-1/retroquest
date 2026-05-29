@@ -7,6 +7,10 @@
           Vous avez <span class="fw-semibold text-primary">{{ items.length }}</span> jeu(x) dans votre collection.
         </p>
       </div>
+      <a :href="path('app_collector_add_collection_item')" class="btn btn-primary d-flex align-items-center gap-2 px-3 py-2 rounded-3 shadow-sm transition-all hover-lift">
+        <i class="bi bi-plus-lg"></i>
+        <span>Ajouter un jeu</span>
+      </a>
     </div>
 
     <div v-if="items.length > 0" class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5 g-4">
@@ -29,9 +33,9 @@
       </div>
       <h3 class="fw-bold text-dark mb-2">Votre collection est vide</h3>
       <p class="text-secondary mx-auto mb-4" style="max-width: 400px;">
-        Commencez à ajouter des jeux ou des consoles depuis le catalogue de la guilde pour suivre leur valeur.
+        Commencez à ajouter des jeux ou des consoles ou consulter le catalogue de la guilde.
       </p>
-      <a :href="catalogUrl" class="btn btn-primary px-4 py-2 rounded-3 shadow-sm">
+      <a :href="path('app_collector_guild_catalog')" class="btn btn-primary px-4 py-2 rounded-3 shadow-sm">
         Découvrir le catalogue
       </a>
     </div>
@@ -49,8 +53,6 @@ const props = defineProps({
   }
 });
 
-const catalogUrl = Routing.generate('app_collector_guild_catalog');
-
 const onExchange = (id) => {
   const item = props.items.find(i => i.id === id);
   const title = item ? item.game.title : 'ce jeu';
@@ -63,6 +65,9 @@ const onDelete = (id) => {
   const title = item ? item.game.title : 'ce jeu';
   console.log('Action Supprimer déclenchée pour l\'item:', id);
   alert(`Action de suppression demandée pour "${title}" (ID: ${id}).`);
+};
+const path = (name, params = {}) => {
+  return Routing.generate(name, params);
 };
 </script>
 

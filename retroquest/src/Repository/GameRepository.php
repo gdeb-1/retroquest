@@ -36,5 +36,13 @@ class GameRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function findVisibleGames(): \Doctrine\ORM\QueryBuilder
+    {
+        return $this->createQueryBuilder('g')
+            ->where('g.isHidden = :hidden')
+            ->setParameter('hidden', false)
+            ->orderBy('g.title', 'ASC');
+    }
 }
 

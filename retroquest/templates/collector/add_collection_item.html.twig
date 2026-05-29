@@ -1,0 +1,56 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Ajouter un jeu - Retroquest{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <h1 class="h4 mb-3 fw-bold">Ajouter un jeu à ma collection</h1>
+                    <p class="text-muted mb-4">Sélectionnez un jeu existant et configurez les détails de son acquisition.</p>
+
+                    {% if not form.vars.valid %}
+                        <div class="alert alert-danger mb-3">
+                            {{ form_errors(form) }}
+                        </div>
+                    {% endif %}
+
+                    {{ form_start(form) }}
+                        <div class="mb-3">
+                            {{ form_row(form.game) }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form_row(form.state) }}
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-8">
+                                {{ form_row(form.acquisitionPrice) }}
+                            </div>
+                            <div class="col-4">
+                                {{ form_row(form.currency) }}
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            {{ form_row(form.acquisitionDate) }}
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <a href="{{ path('app_collector_my_collection') }}" class="btn btn-outline-secondary w-50 py-2">
+                                Annuler
+                            </a>
+                            <button type="submit" class="btn btn-primary w-50 py-2">
+                                Ajouter
+                            </button>
+                        </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
