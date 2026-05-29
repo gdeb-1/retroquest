@@ -64,3 +64,18 @@ db-init: ## Init the database
 db-recreate: ## Recreate the database
 	$(MAKE) db-drop
 	$(MAKE) db-init
+
+# Tests
+test-db-init: ## Init the test database
+	$(CONSOLE) doctrine:database:drop --env=test --force --if-exists
+	$(CONSOLE) doctrine:database:create --env=test --if-not-exists
+	$(CONSOLE) doctrine:migrations:migrate --env=test --no-interaction
+
+test: ## Run the tests
+	$(MAKE) test-db-init
+	$(EXEC) php vendor/bin/phpunit
+
+#cache : 
+clear-cache: ## Clear the cache
+	$(EXEC) php bin/console cache:pool:clear --all
+
