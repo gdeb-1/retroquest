@@ -62,10 +62,6 @@ defineProps({
   isAdmin: {
     type: Boolean,
     default: false
-  },
-  guildCatalogUrl: {
-    type: String,
-    required: true
   }
 });
 const getRoute = (routeName) => {
