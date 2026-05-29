@@ -39,10 +39,56 @@
         Découvrir le catalogue
       </a>
     </div>
+
+    <Teleport to="body">
+      <div 
+        v-if="itemToDelete" 
+        class="modal fade show" 
+        style="display: block; background-color: rgba(0, 0, 0, 0.5);" 
+        tabindex="-1" 
+        role="dialog"
+      >
+        <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content shadow-lg border-0 rounded-4">
+            <div class="modal-header border-bottom-0 pb-0">
+              <h5 class="modal-title fw-bold text-dark">Confirmer la suppression</h5>
+              <button 
+                type="button" 
+                class="btn-close" 
+                @click="itemToDelete = null" 
+                aria-label="Close"
+              ></button>
+            </div>
+            <div class="modal-body py-3">
+              <p class="text-secondary small lh-base">
+                Voulez-vous vraiment retirer le jeu <strong>{{ itemToDelete.game.title }}</strong> de votre collection ?
+              </p>
+            </div>
+            <div class="modal-footer border-top-0 pt-0">
+              <button 
+                type="button" 
+                class="btn btn-secondary rounded-3" 
+                @click="itemToDelete = null"
+              >
+                Annuler
+              </button>
+              <button 
+                type="button" 
+                class="btn btn-danger rounded-3" 
+                @click="confirmDelete"
+              >
+                Supprimer
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
 <script setup>
+import { ref } from 'vue';
 import CollectionItemCard from './CollectionItemCard.vue';
 import Routing from 'fos-router';
 
@@ -50,8 +96,14 @@ const props = defineProps({
   items: {
     type: Array,
     required: true
+  },
+  csrfToken: {
+    type: String,
+    required: true
   }
 });
+
+const itemToDelete = ref(null);
 
 const onExchange = (id) => {
   const item = props.items.find(i => i.id === id);
@@ -62,10 +114,28 @@ const onExchange = (id) => {
 
 const onDelete = (id) => {
   const item = props.items.find(i => i.id === id);
-  const title = item ? item.game.title : 'ce jeu';
-  console.log('Action Supprimer déclenchée pour l\'item:', id);
-  alert(`Action de suppression demandée pour "${title}" (ID: ${id}).`);
+  if (item) {
+    itemToDelete.value = item;
+  }
 };
+
+const confirmDelete = () => {
+  if (!itemToDelete.value) return;
+
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = path('app_collector_delete_collection_item', { id: itemToDelete.value.id });
+
+  const csrfInput = document.createElement('input');
+  csrfInput.type = 'hidden';
+  csrfInput.name = '_token';
+  csrfInput.value = props.csrfToken;
+  form.appendChild(csrfInput);
+
+  document.body.appendChild(form);
+  form.submit();
+};
+
 const path = (name, params = {}) => {
   return Routing.generate(name, params);
 };

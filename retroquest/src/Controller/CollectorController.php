@@ -96,4 +96,30 @@ class CollectorController extends AbstractController
             'form' => $form->createView(),
         ]);
     }
+
+    #[Route('/collector/deleteCollectionItem/{id}', name: 'app_collector_delete_collection_item', methods: ['POST'], options: ['expose' => true])]
+    public function deleteCollectionItem(
+        CollectionItem $collectionItem,
+        Request $request,
+        EntityManagerInterface $entityManager
+    ): Response {
+        /** @var User $user */
+        $user = $this->getUser();
+        if ($collectionItem->getCollector() !== $user) {
+            throw $this->createAccessDeniedException("Vous n'êtes pas autorisé à supprimer ce jeu.");
+        }
+
+        $token = $request->request->get('_token');
+        if (!$this->isCsrfTokenValid('delete_collection_item', $token)) {
+            $this->addFlash('error', 'Le jeton de sécurité est invalide. Veuillez réessayer.');
+            return $this->redirectToRoute('app_collector_my_collection');
+        }
+
+        $entityManager->remove($collectionItem);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Le jeu a été retiré de votre collection.');
+
+        return $this->redirectToRoute('app_collector_my_collection');
+    }
 }

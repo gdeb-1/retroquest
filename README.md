@@ -51,7 +51,9 @@
 28. correction de GuildCatalog => on affiche les jeu et non les itemCollection
 29. Implémentation du formulaire d'ajout d'item à maCollection
 30. correction des test et mise en place test ajout item à maCollection
-31. 
+31. correction gestion cas date vide ajout item itemCollection + implémentation app.flashes
+32. implémentation route suppression itemCollection + test
+
 
 
 ## clef api rawg.io: 
