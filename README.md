@@ -1,5 +1,12 @@
 # retroquest
 
+## Installation :
+- make up -> pour lancer l'app
+- make init -> pour initialiser l'app (fixtures + assests)
+La clef API RAWG est dans le .env (volontairement push sur github)
+## Executer les tests :
+- make test -> création de la bdd de test + exécution des tests.
+
 ## Stack tech: 
 - Symfony 7.4 (Monolithique, pas d'API REST)
 - Base de données relationnelle MySQL
@@ -53,8 +60,10 @@
 30. correction des test et mise en place test ajout item à maCollection
 31. correction gestion cas date vide ajout item itemCollection + implémentation app.flashes
 32. implémentation route suppression itemCollection + test
-
-
+33. implémentation routes admin et moderation
+34. implémentation test sécurité des routes
+35. implémentation service echange
+36. implémentation test service echange
 
 ## clef api rawg.io: 
     7ed5cc4a22894491881a735919d2e539
