@@ -1470,6 +1470,19 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     controllers_path?: scalar|Param|null, // The path to the directory where Vue controller components are stored - relevant only when using symfony/asset-mapper. // Default: "%kernel.project_dir%/assets/vue/controllers"
  *     name_glob?: list<scalar|Param|null>,
  * }
+ * @psalm-type FosJsRoutingConfig = array{
+ *     serializer?: scalar|Param|null,
+ *     routes_to_expose?: list<scalar|Param|null>,
+ *     router?: scalar|Param|null, // Default: "router"
+ *     request_context_base_url?: scalar|Param|null, // Default: null
+ *     cache_control?: array{
+ *         public?: bool|Param, // Default: false
+ *         expires?: scalar|Param|null, // Default: null
+ *         maxage?: scalar|Param|null, // Default: null
+ *         smaxage?: scalar|Param|null, // Default: null
+ *         vary?: list<scalar|Param|null>,
+ *     },
+ * }
  * @psalm-type ConfigType = array{
  *     imports?: ImportsConfig,
  *     parameters?: ParametersConfig,
@@ -1484,6 +1497,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     stimulus?: StimulusConfig,
  *     webpack_encore?: WebpackEncoreConfig,
  *     vue?: VueConfig,
+ *     fos_js_routing?: FosJsRoutingConfig,
  *     "when@dev"?: array{
  *         imports?: ImportsConfig,
  *         parameters?: ParametersConfig,
@@ -1501,6 +1515,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         stimulus?: StimulusConfig,
  *         webpack_encore?: WebpackEncoreConfig,
  *         vue?: VueConfig,
+ *         fos_js_routing?: FosJsRoutingConfig,
  *     },
  *     "when@prod"?: array{
  *         imports?: ImportsConfig,
@@ -1516,6 +1531,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         stimulus?: StimulusConfig,
  *         webpack_encore?: WebpackEncoreConfig,
  *         vue?: VueConfig,
+ *         fos_js_routing?: FosJsRoutingConfig,
  *     },
  *     "when@test"?: array{
  *         imports?: ImportsConfig,
@@ -1532,6 +1548,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         stimulus?: StimulusConfig,
  *         webpack_encore?: WebpackEncoreConfig,
  *         vue?: VueConfig,
+ *         fos_js_routing?: FosJsRoutingConfig,
  *     },
  *     ...<string, ExtensionType|array{ // extra keys must follow the when@%env% pattern or match an extension alias
  *         imports?: ImportsConfig,

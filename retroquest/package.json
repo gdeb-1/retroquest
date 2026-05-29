@@ -8,6 +8,7 @@
         "@symfony/ux-vue": "file:vendor/symfony/ux-vue/assets",
         "@symfony/webpack-encore": "^6.0.0",
         "core-js": "^3.38.0",
+        "fos-router": "./vendor/friendsofsymfony/jsrouting-bundle/Resources/",
         "regenerator-runtime": "^0.13.9",
         "vue": "^3.0",
         "vue-loader": "^17.4.2",

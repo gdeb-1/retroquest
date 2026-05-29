@@ -26,9 +26,14 @@ sh: ## Access the PHP container shell
 
 init: ## Init the project
 	$(MAKE) db-init
-	$(MAKE) build-assets
+	$(MAKE) init-assets
 
 #Assets
+init-assets: ## Init the assets
+	$(EXEC) php bin/console assets:install --symlink public
+	$(EXEC) npm install
+	$(EXEC) npm run build
+
 build-assets: ## Build the assets
 	$(EXEC) npm run build
 
@@ -46,7 +51,7 @@ db-drop: ## Drop the database
 	$(CONSOLE) doctrine:database:drop --force
 
 db-create: ## Create the database
-	$(CONSOLE) doctrine:database:create
+	$(CONSOLE) doctrine:database:create --if-not-exists
 
 db-fixtures: ## Load fixtures
 	$(CONSOLE) doctrine:fixtures:load --append
