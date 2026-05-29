@@ -22,6 +22,7 @@
                         <tr>
                             <th>Email</th>
                             <th>Rôles</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -43,7 +44,11 @@
                                     {% endif %}
                                 {% endfor %}
                             </td>
-
+                            <td>
+                                <a href="{{ path('app_administrator_edit_user', {id: user.id}) }}" class="btn btn-sm btn-outline-primary">
+                                    Éditer les rôles
+                                </a>
+                            </td>
                         </tr>
                     {% else %}
                         <tr>

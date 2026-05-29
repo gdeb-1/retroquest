@@ -1,0 +1,41 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Éditer un utilisateur - Retroquest{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h1 class="h4 mb-0 fw-bold">Éditer les rôles de {{ user.email }}</h1>
+                        <a href="{{ path('app_administrator_users') }}" class="btn btn-outline-secondary btn-sm">Retour</a>
+                    </div>
+
+                    {{ form_start(form) }}
+                        <div class="mb-3">
+                            {{ form_label(form.roles, 'Rôles', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                            
+                            <div class="form-check-group">
+                                {% for child in form.roles %}
+                                    <div class="form-check form-switch mb-2">
+                                        {{ form_widget(child, {'attr': {'class': 'form-check-input'}}) }}
+                                        {{ form_label(child, null, {'label_attr': {'class': 'form-check-label'}}) }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            
+                            {{ form_errors(form.roles) }}
+                        </div>
+
+                        <div class="d-grid mt-4">
+                            <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
+                        </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

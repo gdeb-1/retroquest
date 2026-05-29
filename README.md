@@ -64,6 +64,9 @@ La clef API RAWG est dans le .env (volontairement push sur github)
 34. implémentation test sécurité des routes
 35. implémentation service echange
 36. implémentation test service echange
+37. implémentation hiérarchie des roles
+38. implémentation gestion des roles utilisateurs
+
 
 ## clef api rawg.io: 
     7ed5cc4a22894491881a735919d2e539

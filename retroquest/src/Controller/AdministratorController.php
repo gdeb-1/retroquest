@@ -32,4 +32,23 @@ class AdministratorController extends AbstractController
             'users' => $users,
         ]);
     }
+
+    #[Route('/administrator/users/{id}/edit', name: 'app_administrator_edit_user')]
+    public function editUser(User $user, Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $form = $this->createForm(\App\Form\UserRoleType::class, $user);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->flush();
+            $this->addFlash('success', 'Le role de l\'utilisateur a bien été mis a jour.');
+
+            return $this->redirectToRoute('app_administrator_users');
+        }
+
+        return $this->render('administrator/edit_user.html.twig', [
+            'user' => $user,
+            'form' => $form->createView(),
+        ]);
+    }
 }
