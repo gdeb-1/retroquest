@@ -27,7 +27,7 @@ class CollectionItemFixtures extends Fixture implements DependentFixtureInterfac
             $item->setState($states[array_rand($states)]);
             $item->setAcquisitionPrice(rand(500, 12000));
             $item->setCurrency($currencies[array_rand($currencies)]);
-            $item->setAcquisitionDate(new \DateTime(sprintf('-%d days', rand(1, 730))));
+            $item->setAcquisitionDate(new \DateTime(sprintf('-%d days', rand(1, 45))));
             
             // Random Game
             $gameReference = GameFixtures::GAME_REFERENCE_PREFIX . rand(0, 99);
