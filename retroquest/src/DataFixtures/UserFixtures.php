@@ -42,7 +42,7 @@ class UserFixtures extends Fixture
         for ($i = 0; $i < 2; $i++) {
             $user = new User();
             $user->setEmail(sprintf('moderator%d@example.com', $i + 1));
-            $user->setRoles(['ROLE_MODERATOR', 'ROLE_COLLECTOR']);
+            $user->setRoles(['ROLE_MODERATOR']);
             
             $hashedPassword = $this->passwordHasher->hashPassword($user, $defaultPassword);
             $user->setPassword($hashedPassword);
@@ -55,7 +55,7 @@ class UserFixtures extends Fixture
         // 3. Create 1 Admin
         $admin = new User();
         $admin->setEmail('admin@example.com');
-        $admin->setRoles(['ROLE_ADMIN', 'ROLE_MODERATOR', 'ROLE_COLLECTOR']);
+        $admin->setRoles(['ROLE_ADMIN']);
         
         $hashedPassword = $this->passwordHasher->hashPassword($admin, $defaultPassword);
         $admin->setPassword($hashedPassword);

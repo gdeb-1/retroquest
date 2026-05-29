@@ -39,6 +39,10 @@ security:
         - { path: ^/admin, roles: ROLE_ADMIN }
         - { path: ^/moderator, roles: ROLE_MODERATOR }
         - { path: ^/collector, roles: ROLE_COLLECTOR }
+    role_hierarchy:
+        ROLE_COLLECTOR: []
+        ROLE_MODERATOR: [ROLE_COLLECTOR]
+        ROLE_ADMIN: [ROLE_MODERATOR]
 
 when@test:
     security:

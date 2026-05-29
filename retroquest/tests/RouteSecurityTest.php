@@ -99,7 +99,7 @@ class RouteSecurityTest extends WebTestCase
         return [
             [['ROLE_USER'], 403],
             [['ROLE_COLLECTOR'], 403],
-            [['ROLE_ADMIN'], 403],
+            [['ROLE_ADMIN'], 200],
             [['ROLE_MODERATOR'], 200],
         ];
     }
@@ -121,8 +121,8 @@ class RouteSecurityTest extends WebTestCase
     {
         return [
             [['ROLE_USER'], 403],
-            [['ROLE_MODERATOR'], 403],
-            [['ROLE_ADMIN'], 403],
+            [['ROLE_MODERATOR'], 200],
+            [['ROLE_ADMIN'], 200],
             [['ROLE_COLLECTOR'], 200],
         ];
     }
