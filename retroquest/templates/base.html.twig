@@ -14,6 +14,7 @@
     </head>
     <body>
         {% include 'parts/navbar.html.twig' with {} only %}
+        {% include 'parts/flashbar.html.twig' with {flashes: app.flashes} only %}
         {% block body %}{% endblock %}
     </body>
 </html>

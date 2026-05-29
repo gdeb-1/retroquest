@@ -76,7 +76,12 @@ class CollectorController extends AbstractController
         $collectionItem->setAcquisitionDate(new \DateTime());
 
         $form = $this->createForm(CollectionItemType::class, $collectionItem);
-        $form->handleRequest($request);
+        try{
+            $form->handleRequest($request);
+        }catch(\Exception $e){
+            $this->addFlash('error', 'Une erreur est survenue lors de l\'ajout du jeu à votre collection.');
+            return $this->redirectToRoute('app_collector_add_collection_item');
+        }
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->persist($collectionItem);
