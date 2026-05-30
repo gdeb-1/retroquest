@@ -37,7 +37,7 @@
     </template>
 
     <template v-if="isModerator">
-      <a class="nav-link text-secondary fw-medium ms-3" :href="getRoute('app_moderator_hello_moderator')">Modérer les avis</a>
+      <a class="nav-link text-secondary fw-medium ms-3" :href="getRoute('app_moderator_reviews')">Modérer les avis</a>
       <a class="nav-link text-secondary fw-medium ms-3" :href="getRoute('app_moderator_games')">Gérer les jeux</a>
     </template>
 

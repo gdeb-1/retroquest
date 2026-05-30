@@ -5,9 +5,11 @@ namespace App\Controller;
 use App\Entity\User;
 use \App\Entity\Game;
 use App\Entity\CollectionItem;
+use App\Entity\Review;
 use App\Form\CollectionItemType;
 use App\Repository\CollectionItemRepository;
 use App\Repository\GameRepository;
+use App\Repository\ReviewRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -53,5 +55,15 @@ class ModeratorController extends AbstractController
         $this->addFlash('success', sprintf('La fiche du jeu "%s" est maintenant %s.', $game->getTitle(), $status));
 
         return $this->redirectToRoute('app_moderator_games');
+    }
+
+    #[Route('/moderator/review', name: 'app_moderator_reviews', options: ['expose' => true])]
+    public function reviews(ReviewRepository $reviewRepository): Response
+    {
+        $reviews = $reviewRepository->findBy([], ['createdAt' => 'DESC']);
+
+        return $this->render('moderator/reviews.html.twig', [
+            'reviews' => $reviews,
+        ]);
     }
 }
