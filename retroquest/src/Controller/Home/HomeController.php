@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller;
+namespace App\Controller\Home;
 
 use App\Repository\GameRepository;
 use App\Repository\CollectionItemRepository;
@@ -17,6 +17,7 @@ class HomeController extends AbstractController
         private RawgService $rawgService,
         private CacheInterface $cache
     ) {}
+
     #[Route('/', name: 'app_home')]
     public function index(GameRepository $gameRepository, CollectionItemRepository $collectionItemRepository): Response
     {
@@ -83,6 +84,4 @@ class HomeController extends AbstractController
         }
         return $popularGames;
     }
-    
 }
-
