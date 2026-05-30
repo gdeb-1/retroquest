@@ -1,15 +1,15 @@
 <?php
 
-namespace App\Tests;
+namespace App\Tests\Controller\Moderator\Review;
 
-use App\Entity\Review;
 use App\Entity\Game;
+use App\Entity\Review;
 use App\Entity\User;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DomCrawler\Crawler;
 
-class ModeratorControllerTest extends WebTestCase
+class ValidateReviewControllerTest extends WebTestCase
 {
     private KernelBrowser $client;
     private $entityManager;
@@ -80,31 +80,6 @@ class ModeratorControllerTest extends WebTestCase
         return $review;
     }
 
-    public function testReviewsPageUnauthenticated(): void
-    {
-        $this->client->request('GET', '/moderator/review');
-        self::assertResponseRedirects('/login');
-    }
-
-    public function testReviewsPageUnauthorized(): void
-    {
-        $this->client->loginUser($this->collector);
-
-        $this->client->request('GET', '/moderator/review');
-        self::assertResponseStatusCodeSame(403);
-    }
-
-    public function testReviewsPageSuccess(): void
-    {
-        $review = $this->createGameAndReview($this->collector);
-
-        $this->client->loginUser($this->moderator);
-        $this->client->request('GET', '/moderator/review');
-
-        self::assertResponseIsSuccessful();
-        self::assertSelectorExists('[data-symfony--ux-vue--vue-component-value="ModeratorReviews"]');
-    }
-
     public function testValidateReviewSuccess(): void
     {
         $review = $this->createGameAndReview($this->collector, false);
@@ -160,62 +135,5 @@ class ModeratorControllerTest extends WebTestCase
         $this->entityManager->clear();
         $updatedReview = $this->entityManager->getRepository(Review::class)->find($review->getId());
         self::assertFalse($updatedReview->isValid());
-    }
-
-    public function testDeleteReviewSuccess(): void
-    {
-        $review = $this->createGameAndReview($this->collector, false);
-
-        $this->client->loginUser($this->moderator);
-        $this->client->request('GET', '/moderator/review');
-        self::assertResponseIsSuccessful();
-
-        // Extract CSRF token from Vue component props
-        $html = $this->client->getResponse()->getContent();
-        $crawler = new Crawler($html);
-        $div = $crawler->filter('[data-symfony--ux-vue--vue-component-value="ModeratorReviews"]');
-        $props = json_decode($div->attr('data-symfony--ux-vue--vue-props-value'), true);
-        
-        $token = null;
-        foreach ($props['reviews'] as $r) {
-            if ($r['id'] === $review->getId()) {
-                $token = $r['csrfTokenDelete'];
-                break;
-            }
-        }
-        self::assertNotNull($token);
-
-        // Perform deletion
-        $this->client->request('POST', '/moderator/review/delete/' . $review->getId(), [
-            '_token' => $token
-        ]);
-
-        self::assertResponseRedirects('/moderator/review');
-        $this->client->followRedirect();
-        self::assertSelectorTextContains('body', 'L\'avis a été supprimé avec succès.');
-
-        // Verify deleted from DB
-        $this->entityManager->clear();
-        $deletedReview = $this->entityManager->getRepository(Review::class)->find($review->getId());
-        self::assertNull($deletedReview);
-    }
-
-    public function testDeleteReviewInvalidCsrf(): void
-    {
-        $review = $this->createGameAndReview($this->collector, false);
-
-        $this->client->loginUser($this->moderator);
-        $this->client->request('POST', '/moderator/review/delete/' . $review->getId(), [
-            '_token' => 'invalid_csrf_token'
-        ]);
-
-        self::assertResponseRedirects('/moderator/review');
-        $this->client->followRedirect();
-        self::assertSelectorTextContains('body', 'Le jeton de sécurité est invalide.');
-
-        // Verify state in DB unchanged
-        $this->entityManager->clear();
-        $updatedReview = $this->entityManager->getRepository(Review::class)->find($review->getId());
-        self::assertNotNull($updatedReview);
     }
 }
