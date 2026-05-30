@@ -329,7 +329,19 @@ class CollectorControllerTest extends WebTestCase
         $this->client->request('GET', '/collector/game/' . $game->getId());
         
         self::assertResponseIsSuccessful();
-        self::assertSelectorTextContains('h1', 'Super Mario Land');
+        
+        $html = $this->client->getResponse()->getContent();
+        $crawler = new \Symfony\Component\DomCrawler\Crawler($html);
+        $div = $crawler->filter('[data-symfony--ux-vue--vue-component-value="GameShow"]');
+        self::assertCount(1, $div);
+        
+        $props = json_decode($div->attr('data-symfony--ux-vue--vue-props-value'), true);
+        self::assertEquals('Super Mario Land', $props['game']['title']);
+        self::assertEquals('Game Boy', $props['game']['console']);
+        self::assertEquals(1989, $props['game']['releaseYear']);
+        self::assertArrayHasKey('description', $props);
+        self::assertArrayHasKey('collectionCount', $props);
+        self::assertArrayHasKey('averagePrices', $props);
     }
 }
 
