@@ -100,4 +100,65 @@ class ModeratorControllerTest extends WebTestCase
         self::assertResponseIsSuccessful();
         self::assertSelectorExists('[data-symfony--ux-vue--vue-component-value="ModeratorReviews"]');
     }
+
+    public function testValidateReviewSuccess(): void
+    {
+        $mod = $this->createModeratorUser();
+        $collector = $this->createCollectorUser();
+        $review = $this->createGameAndReview($collector, false);
+
+        $this->client->loginUser($mod);
+        $this->client->request('GET', '/moderator/review');
+        self::assertResponseIsSuccessful();
+
+        // Extract CSRF token from Vue component props
+        $html = $this->client->getResponse()->getContent();
+        $crawler = new Crawler($html);
+        $div = $crawler->filter('[data-symfony--ux-vue--vue-component-value="ModeratorReviews"]');
+        $props = json_decode($div->attr('data-symfony--ux-vue--vue-props-value'), true);
+        
+        $token = null;
+        foreach ($props['reviews'] as $r) {
+            if ($r['id'] === $review->getId()) {
+                $token = $r['csrfTokenValidate'];
+                break;
+            }
+        }
+        self::assertNotNull($token);
+
+        // Perform validation
+        $this->client->request('POST', '/moderator/review/validate/' . $review->getId(), [
+            '_token' => $token
+        ]);
+
+        self::assertResponseRedirects('/moderator/review');
+        $this->client->followRedirect();
+        self::assertSelectorTextContains('body', 'L\'avis a été validé avec succès.');
+
+        // Verify state in DB
+        $this->entityManager->clear();
+        $updatedReview = $this->entityManager->getRepository(Review::class)->find($review->getId());
+        self::assertTrue($updatedReview->isValid());
+    }
+
+    public function testValidateReviewInvalidCsrf(): void
+    {
+        $mod = $this->createModeratorUser();
+        $collector = $this->createCollectorUser();
+        $review = $this->createGameAndReview($collector, false);
+
+        $this->client->loginUser($mod);
+        $this->client->request('POST', '/moderator/review/validate/' . $review->getId(), [
+            '_token' => 'invalid_csrf_token'
+        ]);
+
+        self::assertResponseRedirects('/moderator/review');
+        $this->client->followRedirect();
+        self::assertSelectorTextContains('body', 'Le jeton de sécurité est invalide.');
+
+        // Verify state in DB unchanged
+        $this->entityManager->clear();
+        $updatedReview = $this->entityManager->getRepository(Review::class)->find($review->getId());
+        self::assertFalse($updatedReview->isValid());
+    }
 }

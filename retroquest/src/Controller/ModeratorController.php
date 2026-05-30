@@ -66,4 +66,21 @@ class ModeratorController extends AbstractController
             'reviews' => $reviews,
         ]);
     }
+
+    #[Route('/moderator/review/validate/{id}', name: 'app_moderator_validate_review', methods: ['POST'], options: ['expose' => true])]
+    public function validateReview(
+        Review $review,
+        Request $request,
+        EntityManagerInterface $entityManager
+    ): Response {
+        $token = $request->request->get('_token');
+        if (!$this->isCsrfTokenValid('validate_review_' . $review->getId(), $token)) {
+            $this->addFlash('error', 'Le jeton de sécurité est invalide. Veuillez réessayer.');
+            return $this->redirectToRoute('app_moderator_reviews');
+        }
+        $review->setIsValid(true);
+        $entityManager->flush();
+        $this->addFlash('success', 'L\'avis a été validé avec succès.');
+        return $this->redirectToRoute('app_moderator_reviews');
+    }
 }

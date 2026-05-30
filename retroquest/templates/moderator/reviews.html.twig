@@ -17,7 +17,8 @@
             createdAt: review.createdAt|date('d/m/Y H:i'),
             authorEmail: review.author.email,
             gameTitle: review.game.title,
-            gameConsole: review.game.console
+            gameConsole: review.game.console,
+            csrfTokenValidate: csrf_token('validate_review_' ~ review.id)
         }]) %}
     {% endfor %}
 

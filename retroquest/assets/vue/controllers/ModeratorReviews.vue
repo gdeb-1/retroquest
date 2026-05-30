@@ -7,6 +7,7 @@
           :columns="columns" 
           :options="options" 
           class="table table-striped table-hover border align-middle w-100"
+          @click="handleTableClick"
         />
       </div>
     </div>
@@ -26,26 +27,20 @@ const props = defineProps({
     type: Array,
     required: true
   }
-})
+});
 
 const columns = [
-  { 
-    data: null, 
-    title: 'Jeu',
-    className: 'fw-semibold text-dark ps-4',
-    render: (data, type, row) => {
-      return `${row.gameTitle} <span class="badge bg-secondary-subtle text-secondary ms-1">${row.gameConsole}</span>`;
-    }
-  },
+  { data: 'gameTitle', title: 'Jeu', className: 'fw-semibold' },
+  { data: 'gameConsole', title: 'Console' },
   { data: 'authorEmail', title: 'Auteur' },
+  { data: 'createdAt', title: 'Date' },
   { 
     data: 'comment', 
     title: 'Commentaire',
     render: (data) => {
-      return `<span class="text-secondary" style="font-style: italic;">"${data}"</span>`;
+      return `<span class="text-secondary fst-italic">"${data}"</span>`;
     }
   },
-  { data: 'createdAt', title: 'Date' },
   { 
     data: 'isValid', 
     title: 'Statut',
@@ -53,6 +48,19 @@ const columns = [
       return data 
         ? '<span class="badge bg-success w-100">Validé</span>' 
         : '<span class="badge bg-warning text-dark w-100">En attente</span>';
+    }
+  },
+  {
+    data: null,
+    title: 'Actions',
+    orderable: false,
+    className: 'text-end pe-4',
+    render: (data, type, row) => {
+      let buttons = '';
+      if (!row.isValid) {
+        buttons += `<button class="btn btn-sm btn-success me-2 btn-validate w-100 mb-1" data-id="${row.id}"><i class="bi bi-check-lg"></i> Valider</button>`;
+      }
+      return buttons;
     }
   }
 ];
@@ -73,11 +81,38 @@ const options = {
     zeroRecords: "Aucun résultat trouvé"
   },
   pageLength: 10,
-  order: [[3, 'desc']] // Tri par date de création décroissante
+  order: [[3, 'desc']]
 };
 
 const path = (name, params = {}) => {
   return Routing.generate(name, params);
+};
+
+const handleTableClick = (event) => {
+  const validateButton = event.target.closest('.btn-validate');
+
+  if (validateButton) {
+    const reviewId = validateButton.dataset.id;
+    const review = props.reviews.find(r => r.id == reviewId);
+    if (review) {
+      handleValidate(review);
+    }
+  }
+};
+
+const handleValidate = (review) => {
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = path('app_moderator_validate_review', { id: review.id });
+
+  const csrfInput = document.createElement('input');
+  csrfInput.type = 'hidden';
+  csrfInput.name = '_token';
+  csrfInput.value = review.csrfTokenValidate;
+  form.appendChild(csrfInput);
+
+  document.body.appendChild(form);
+  form.submit();
 };
 </script>
 
@@ -143,9 +178,5 @@ table.dataTable {
 
 table.dataTable th {
   border-bottom: 2px solid #dee2e6 !important;
-}
-
-.italic-text {
-  font-style: italic;
 }
 </style>
