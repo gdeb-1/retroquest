@@ -365,5 +365,220 @@ class CollectorControllerTest extends WebTestCase
         self::assertEquals('Awesome game!', $props['reviews'][0]['comment']);
         self::assertEquals('collector_show@example.com', $props['reviews'][0]['authorEmail']);
     }
+
+    public function testLeaveReviewUnauthenticated(): void
+    {
+        $game = (new Game())
+            ->setTitle('Test Game Unauthenticated')
+            ->setConsole('NES')
+            ->setReleaseYear(1985)
+            ->setIsHidden(false);
+        $this->entityManager->persist($game);
+        $this->entityManager->flush();
+
+        $this->client->request('POST', '/collector/game/' . $game->getId(), [
+            'review' => [
+                'comment' => 'This is a test review by guest.',
+                '_token' => 'some_token'
+            ]
+        ]);
+        self::assertResponseRedirects('/login');
+    }
+
+    public function testLeaveReviewUnauthorized(): void
+    {
+        $container = static::getContainer();
+        $passwordHasher = $container->get('security.user_password_hasher');
+
+        $user = (new User())->setEmail('regular_review@example.com');
+        $user->setPassword($passwordHasher->hashPassword($user, 'password'));
+        $user->setRoles(['ROLE_USER']);
+
+        $game = (new Game())
+            ->setTitle('Test Game Unauthorized')
+            ->setConsole('NES')
+            ->setReleaseYear(1985)
+            ->setIsHidden(false);
+
+        $this->entityManager->persist($user);
+        $this->entityManager->persist($game);
+        $this->entityManager->flush();
+
+        $this->client->loginUser($user);
+        $this->client->request('POST', '/collector/game/' . $game->getId(), [
+            'review' => [
+                'comment' => 'This is a test review.',
+                '_token' => 'some_token'
+            ]
+        ]);
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testLeaveReviewSuccess(): void
+    {
+        $container = static::getContainer();
+        $passwordHasher = $container->get('security.user_password_hasher');
+
+        $user = (new User())->setEmail('collector_review_success@example.com');
+        $user->setPassword($passwordHasher->hashPassword($user, 'password'));
+        $user->setRoles(['ROLE_COLLECTOR']);
+
+        $game = (new Game())
+            ->setTitle('Test Game Success')
+            ->setConsole('NES')
+            ->setReleaseYear(1985)
+            ->setIsHidden(false);
+
+        $this->entityManager->persist($user);
+        $this->entityManager->persist($game);
+        $this->entityManager->flush();
+
+        $this->client->loginUser($user);
+        
+        $crawler = $this->client->request('GET', '/collector/game/' . $game->getId());
+        self::assertResponseIsSuccessful();
+
+        // Extract CSRF token from the Twig-rendered form input
+        $csrfToken = $crawler->filter('input[name="review[_token]"]')->attr('value');
+        self::assertNotEmpty($csrfToken);
+
+        $this->client->request('POST', '/collector/game/' . $game->getId(), [
+            'review' => [
+                'comment' => 'This is an awesome game review!',
+                '_token' => $csrfToken
+            ]
+        ]);
+
+        self::assertResponseRedirects('/collector/game/' . $game->getId());
+        $this->client->followRedirect();
+
+        $reviewRepository = $this->entityManager->getRepository(\App\Entity\Review::class);
+        $reviews = $reviewRepository->findBy(['game' => $game, 'author' => $user]);
+        self::assertCount(1, $reviews);
+        self::assertEquals('This is an awesome game review!', $reviews[0]->getComment());
+        self::assertFalse($reviews[0]->isValid());
+
+        self::assertSelectorTextContains('body', 'Votre avis a été soumis avec succès et est en attente de modération.');
+
+        // Verify the form is no longer rendered
+        $crawler = $this->client->getCrawler();
+        self::assertCount(0, $crawler->filter('input[name="review[_token]"]'));
+    }
+
+    public function testLeaveReviewValidationError(): void
+    {
+        $container = static::getContainer();
+        $passwordHasher = $container->get('security.user_password_hasher');
+
+        $user = (new User())->setEmail('collector_review_validation@example.com');
+        $user->setPassword($passwordHasher->hashPassword($user, 'password'));
+        $user->setRoles(['ROLE_COLLECTOR']);
+
+        $game = (new Game())
+            ->setTitle('Test Game Validation')
+            ->setConsole('NES')
+            ->setReleaseYear(1985)
+            ->setIsHidden(false);
+
+        $this->entityManager->persist($user);
+        $this->entityManager->persist($game);
+        $this->entityManager->flush();
+
+        $this->client->loginUser($user);
+        
+        $crawler = $this->client->request('GET', '/collector/game/' . $game->getId());
+        $csrfToken = $crawler->filter('input[name="review[_token]"]')->attr('value');
+
+        // Submit empty comment
+        $crawler = $this->client->request('POST', '/collector/game/' . $game->getId(), [
+            'review' => [
+                'comment' => '',
+                '_token' => $csrfToken
+            ]
+        ]);
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', 'Votre avis ne peut pas être vide.');
+
+        // Submit too short comment
+        $crawler = $this->client->request('POST', '/collector/game/' . $game->getId(), [
+            'review' => [
+                'comment' => 'Wow',
+                '_token' => $csrfToken
+            ]
+        ]);
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', 'Votre avis doit contenir au moins 5 caractères.');
+        self::assertEquals('Wow', $crawler->filter('textarea[name="review[comment]"]')->text());
+
+        $reviewRepository = $this->entityManager->getRepository(\App\Entity\Review::class);
+        $reviews = $reviewRepository->findBy(['game' => $game, 'author' => $user]);
+        self::assertCount(0, $reviews);
+    }
+
+    public function testLeaveReviewDuplicate(): void
+    {
+        $container = static::getContainer();
+        $passwordHasher = $container->get('security.user_password_hasher');
+
+        $user = (new User())->setEmail('collector_review_duplicate@example.com');
+        $user->setPassword($passwordHasher->hashPassword($user, 'password'));
+        $user->setRoles(['ROLE_COLLECTOR']);
+
+        $game = (new Game())
+            ->setTitle('Test Game Duplicate')
+            ->setConsole('NES')
+            ->setReleaseYear(1985)
+            ->setIsHidden(false);
+
+        $existingReview = (new \App\Entity\Review())
+            ->setComment('Initial comment')
+            ->setIsValid(false)
+            ->setCreatedAt(new \DateTimeImmutable())
+            ->setAuthor($user)
+            ->setGame($game);
+
+        // Create a second game that the user has NOT reviewed to fetch a valid CSRF token from
+        $game2 = (new Game())
+            ->setTitle('Test Game 2')
+            ->setConsole('NES')
+            ->setReleaseYear(1985)
+            ->setIsHidden(false);
+
+        $this->entityManager->persist($user);
+        $this->entityManager->persist($game);
+        $this->entityManager->persist($game2);
+        $this->entityManager->persist($existingReview);
+        $this->entityManager->flush();
+
+        $this->client->loginUser($user);
+        
+        $crawler = $this->client->request('GET', '/collector/game/' . $game->getId());
+        self::assertResponseIsSuccessful();
+        
+        // Form should not be rendered
+        self::assertCount(0, $crawler->filter('input[name="review[_token]"]'));
+
+        // GET the page of the second game to retrieve a valid CSRF token
+        $crawler2 = $this->client->request('GET', '/collector/game/' . $game2->getId());
+        self::assertResponseIsSuccessful();
+        $csrfToken = $crawler2->filter('input[name="review[_token]"]')->attr('value');
+
+        $this->client->request('POST', '/collector/game/' . $game->getId(), [
+            'review' => [
+                'comment' => 'Another comment',
+                '_token' => $csrfToken
+            ]
+        ]);
+
+        self::assertResponseRedirects('/collector/game/' . $game->getId());
+        $this->client->followRedirect();
+
+        self::assertSelectorTextContains('body', 'Vous avez déjà laissé un avis sur ce jeu.');
+
+        $reviewRepository = $this->entityManager->getRepository(\App\Entity\Review::class);
+        $reviews = $reviewRepository->findBy(['game' => $game, 'author' => $user]);
+        self::assertCount(1, $reviews);
+        self::assertEquals('Initial comment', $reviews[0]->getComment());
+    }
 }
 
