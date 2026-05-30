@@ -3,12 +3,17 @@
 namespace App\Tests;
 
 use App\Entity\CollectionItem;
+use App\Entity\Exchange;
 use App\Entity\Game;
+use App\Entity\Review;
 use App\Entity\User;
 use App\Enum\CollectionItemStates;
 use App\Enum\Currency;
+use App\Enum\ExchangeStatuses;
+use App\Repository\CollectionItemRepository;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\DomCrawler\Crawler;
 
 class CollectorControllerTest extends WebTestCase
 {
@@ -209,7 +214,6 @@ class CollectorControllerTest extends WebTestCase
         $this->client->followRedirect();
         self::assertSelectorTextContains('body', 'Le jeton de sécurité est invalide. Veuillez réessayer.');
 
-        // Verify entity still exists
         $item = $this->entityManager->getRepository(CollectionItem::class)->find($collectionItem->getId());
         self::assertNotNull($item);
     }
@@ -247,13 +251,11 @@ class CollectorControllerTest extends WebTestCase
         $this->entityManager->persist($collectionItem);
         $this->entityManager->flush();
 
-        // Log in as the non-owner user
         $this->client->loginUser($other);
         $this->client->request('POST', '/collector/deleteCollectionItem/' . $collectionItem->getId());
         
         self::assertResponseStatusCodeSame(403);
 
-        // Verify entity still exists
         $item = $this->entityManager->getRepository(CollectionItem::class)->find($collectionItem->getId());
         self::assertNotNull($item);
     }
@@ -289,7 +291,7 @@ class CollectorControllerTest extends WebTestCase
         $this->client->loginUser($user);
         $this->client->request('GET', '/collector/myCollection');
         $html = $this->client->getResponse()->getContent();
-        $crawler = new \Symfony\Component\DomCrawler\Crawler($html);
+        $crawler = new Crawler($html);
         $div = $crawler->filter('[data-symfony--ux-vue--vue-component-value="MyCollection"]');
         $props = json_decode($div->attr('data-symfony--ux-vue--vue-props-value'), true);
         $token = $props['csrfToken'];
@@ -321,14 +323,14 @@ class CollectorControllerTest extends WebTestCase
             ->setReleaseYear(1989)
             ->setIsHidden(false);
 
-        $validatedReview = (new \App\Entity\Review())
+        $validatedReview = (new Review())
             ->setComment('Awesome game!')
             ->setIsValid(true)
             ->setCreatedAt(new \DateTimeImmutable())
             ->setAuthor($user)
             ->setGame($game);
 
-        $unvalidatedReview = (new \App\Entity\Review())
+        $unvalidatedReview = (new Review())
             ->setComment('Pending moderation...')
             ->setIsValid(false)
             ->setCreatedAt(new \DateTimeImmutable())
@@ -347,7 +349,7 @@ class CollectorControllerTest extends WebTestCase
         self::assertResponseIsSuccessful();
         
         $html = $this->client->getResponse()->getContent();
-        $crawler = new \Symfony\Component\DomCrawler\Crawler($html);
+        $crawler = new Crawler($html);
         $div = $crawler->filter('[data-symfony--ux-vue--vue-component-value="GameShow"]');
         self::assertCount(1, $div);
         
@@ -359,7 +361,6 @@ class CollectorControllerTest extends WebTestCase
         self::assertArrayHasKey('collectionCount', $props);
         self::assertArrayHasKey('averagePrices', $props);
         
-        // Assert reviews
         self::assertArrayHasKey('reviews', $props);
         self::assertCount(1, $props['reviews']);
         self::assertEquals('Awesome game!', $props['reviews'][0]['comment']);
@@ -438,7 +439,6 @@ class CollectorControllerTest extends WebTestCase
         $crawler = $this->client->request('GET', '/collector/game/' . $game->getId());
         self::assertResponseIsSuccessful();
 
-        // Extract CSRF token from the Twig-rendered form input
         $csrfToken = $crawler->filter('input[name="review[_token]"]')->attr('value');
         self::assertNotEmpty($csrfToken);
 
@@ -452,7 +452,7 @@ class CollectorControllerTest extends WebTestCase
         self::assertResponseRedirects('/collector/game/' . $game->getId());
         $this->client->followRedirect();
 
-        $reviewRepository = $this->entityManager->getRepository(\App\Entity\Review::class);
+        $reviewRepository = $this->entityManager->getRepository(Review::class);
         $reviews = $reviewRepository->findBy(['game' => $game, 'author' => $user]);
         self::assertCount(1, $reviews);
         self::assertEquals('This is an awesome game review!', $reviews[0]->getComment());
@@ -460,7 +460,6 @@ class CollectorControllerTest extends WebTestCase
 
         self::assertSelectorTextContains('body', 'Votre avis a été soumis avec succès et est en attente de modération.');
 
-        // Verify the form is no longer rendered
         $crawler = $this->client->getCrawler();
         self::assertCount(0, $crawler->filter('input[name="review[_token]"]'));
     }
@@ -489,7 +488,6 @@ class CollectorControllerTest extends WebTestCase
         $crawler = $this->client->request('GET', '/collector/game/' . $game->getId());
         $csrfToken = $crawler->filter('input[name="review[_token]"]')->attr('value');
 
-        // Submit empty comment
         $crawler = $this->client->request('POST', '/collector/game/' . $game->getId(), [
             'review' => [
                 'comment' => '',
@@ -499,7 +497,6 @@ class CollectorControllerTest extends WebTestCase
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains('body', 'Votre avis ne peut pas être vide.');
 
-        // Submit too short comment
         $crawler = $this->client->request('POST', '/collector/game/' . $game->getId(), [
             'review' => [
                 'comment' => 'Wow',
@@ -510,7 +507,7 @@ class CollectorControllerTest extends WebTestCase
         self::assertSelectorTextContains('body', 'Votre avis doit contenir au moins 5 caractères.');
         self::assertEquals('Wow', $crawler->filter('textarea[name="review[comment]"]')->text());
 
-        $reviewRepository = $this->entityManager->getRepository(\App\Entity\Review::class);
+        $reviewRepository = $this->entityManager->getRepository(Review::class);
         $reviews = $reviewRepository->findBy(['game' => $game, 'author' => $user]);
         self::assertCount(0, $reviews);
     }
@@ -530,14 +527,13 @@ class CollectorControllerTest extends WebTestCase
             ->setReleaseYear(1985)
             ->setIsHidden(false);
 
-        $existingReview = (new \App\Entity\Review())
+        $existingReview = (new Review())
             ->setComment('Initial comment')
             ->setIsValid(false)
             ->setCreatedAt(new \DateTimeImmutable())
             ->setAuthor($user)
             ->setGame($game);
 
-        // Create a second game that the user has NOT reviewed to fetch a valid CSRF token from
         $game2 = (new Game())
             ->setTitle('Test Game 2')
             ->setConsole('NES')
@@ -555,10 +551,8 @@ class CollectorControllerTest extends WebTestCase
         $crawler = $this->client->request('GET', '/collector/game/' . $game->getId());
         self::assertResponseIsSuccessful();
         
-        // Form should not be rendered
         self::assertCount(0, $crawler->filter('input[name="review[_token]"]'));
 
-        // GET the page of the second game to retrieve a valid CSRF token
         $crawler2 = $this->client->request('GET', '/collector/game/' . $game2->getId());
         self::assertResponseIsSuccessful();
         $csrfToken = $crawler2->filter('input[name="review[_token]"]')->attr('value');
@@ -575,10 +569,139 @@ class CollectorControllerTest extends WebTestCase
 
         self::assertSelectorTextContains('body', 'Vous avez déjà laissé un avis sur ce jeu.');
 
-        $reviewRepository = $this->entityManager->getRepository(\App\Entity\Review::class);
+        $reviewRepository = $this->entityManager->getRepository(Review::class);
         $reviews = $reviewRepository->findBy(['game' => $game, 'author' => $user]);
         self::assertCount(1, $reviews);
         self::assertEquals('Initial comment', $reviews[0]->getComment());
+    }
+
+    public function testExchangeSearchSuccess(): void
+    {
+        $container = static::getContainer();
+        $passwordHasher = $container->get('security.user_password_hasher');
+
+        $currentUser = (new User())->setEmail('me@example.com');
+        $currentUser->setPassword($passwordHasher->hashPassword($currentUser, 'password'));
+        $currentUser->setRoles(['ROLE_COLLECTOR']);
+
+        $otherUser = (new User())->setEmail('other_collector@example.com');
+        $otherUser->setPassword($passwordHasher->hashPassword($otherUser, 'password'));
+        $otherUser->setRoles(['ROLE_COLLECTOR']);
+
+        $this->entityManager->persist($currentUser);
+        $this->entityManager->persist($otherUser);
+        $this->entityManager->flush();
+
+        $gameNormal = (new Game())->setTitle('Zelda: Ocarina of Time')->setConsole('N64')->setReleaseYear(1998)->setIsHidden(false);
+        $gameHidden = (new Game())->setTitle('Hidden Game')->setConsole('NES')->setReleaseYear(1990)->setIsHidden(true);
+
+        $nbGamesTradableBeforeAdd = $this->entityManager->getRepository(CollectionItem::class)->countAvailableForExchange($currentUser);
+
+        $this->entityManager->persist($gameNormal);
+        $this->entityManager->persist($gameHidden);
+
+        $itemOwnedByMe = (new CollectionItem())
+            ->setCollector($currentUser)
+            ->setGame($gameNormal)
+            ->setState(CollectionItemStates::MINT)
+            ->setAcquisitionPrice(5000)
+            ->setCurrency(Currency::EUR)
+            ->setAcquisitionDate(new \DateTime());
+
+        $itemAvailable = (new CollectionItem())
+            ->setCollector($otherUser)
+            ->setGame($gameNormal)
+            ->setState(CollectionItemStates::GOOD)
+            ->setAcquisitionPrice(4000)
+            ->setCurrency(Currency::EUR)
+            ->setAcquisitionDate(new \DateTime());
+
+        $itemHiddenGame = (new CollectionItem())
+            ->setCollector($otherUser)
+            ->setGame($gameHidden)
+            ->setState(CollectionItemStates::GOOD)
+            ->setAcquisitionPrice(3000)
+            ->setCurrency(Currency::EUR)
+            ->setAcquisitionDate(new \DateTime());
+
+        $itemPending = (new CollectionItem())
+            ->setCollector($otherUser)
+            ->setGame($gameNormal)
+            ->setState(CollectionItemStates::FAIR)
+            ->setAcquisitionPrice(2000)
+            ->setCurrency(Currency::EUR)
+            ->setAcquisitionDate(new \DateTime());
+
+        $itemRejected = (new CollectionItem())
+            ->setCollector($otherUser)
+            ->setGame($gameNormal)
+            ->setState(CollectionItemStates::POOR)
+            ->setAcquisitionPrice(1000)
+            ->setCurrency(Currency::EUR)
+            ->setAcquisitionDate(new \DateTime());
+
+        $this->entityManager->persist($itemOwnedByMe);
+        $this->entityManager->persist($itemAvailable);
+        $this->entityManager->persist($itemHiddenGame);
+        $this->entityManager->persist($itemPending);
+        $this->entityManager->persist($itemRejected);
+        $this->entityManager->flush();
+
+        $exchangePending = (new Exchange())
+            ->setProposer($currentUser)
+            ->setReceiver($otherUser)
+            ->setStatus(ExchangeStatuses::PENDING)
+            ->setPropositionDate(new \DateTime())
+            ->addItem($itemPending);
+
+        $exchangeRejected = (new Exchange())
+            ->setProposer($currentUser)
+            ->setReceiver($otherUser)
+            ->setStatus(ExchangeStatuses::REJECTED)
+            ->setPropositionDate(new \DateTime())
+            ->addItem($itemRejected);
+
+        $this->entityManager->persist($exchangePending);
+        $this->entityManager->persist($exchangeRejected);
+        $this->entityManager->flush();
+
+        $this->client->loginUser($currentUser);
+        $this->client->request('GET', '/collector/exchange/search');
+
+        self::assertResponseIsSuccessful();
+
+        $html = $this->client->getResponse()->getContent();
+        $crawler = new Crawler($html);
+        $div = $crawler->filter('[data-symfony--ux-vue--vue-component-value="ExchangeSearch"]');
+        self::assertCount(1, $div);
+
+        $props = json_decode($div->attr('data-symfony--ux-vue--vue-props-value'), true);
+        self::assertArrayHasKey('items', $props);
+        
+        $itemsData = $props['items'];
+        
+        self::assertCount(2 + $nbGamesTradableBeforeAdd, $itemsData);
+
+        $availableItemData = null;
+        $rejectedItemData = null;
+        foreach ($itemsData as $data) {
+            if ($data['id'] === $itemAvailable->getId()) {
+                $availableItemData = $data;
+            } elseif ($data['id'] === $itemRejected->getId()) {
+                $rejectedItemData = $data;
+            }
+        }
+
+        self::assertNotNull($availableItemData);
+        self::assertNotNull($rejectedItemData);
+
+        self::assertEquals(CollectionItemStates::GOOD->value, $availableItemData['state']);
+        self::assertEquals(4000, $availableItemData['acquisitionPrice']);
+        self::assertEquals('Zelda: Ocarina of Time', $availableItemData['game']['title']);
+
+        self::assertEquals(CollectionItemStates::POOR->value, $rejectedItemData['state']);
+        self::assertEquals(1000, $rejectedItemData['acquisitionPrice']);
+        self::assertEquals('Zelda: Ocarina of Time', $rejectedItemData['game']['title']);
     }
 }
 

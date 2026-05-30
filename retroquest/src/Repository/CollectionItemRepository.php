@@ -90,4 +90,22 @@ class CollectionItemRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function countAvailableForExchange(User $currentUser): int
+    {
+        return $this->createQueryBuilder('c')
+            ->select('COUNT(c.id)')
+            ->join('c.game', 'g')
+            ->join('c.collector', 'col')
+            ->leftJoin('c.exchanges', 'e', 'WITH', 'e.status IN (:activeStatuses)')
+            ->andWhere('c.collector != :currentUser')
+            ->andWhere('g.isHidden = false')
+            ->andWhere('e.id IS NULL')
+            ->setParameter('activeStatuses', [
+                ExchangeStatuses::PENDING
+            ])
+            ->setParameter('currentUser', $currentUser)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }
