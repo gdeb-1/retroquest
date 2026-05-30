@@ -8,6 +8,7 @@ use App\Entity\Game;
 use App\Form\CollectionItemType;
 use App\Repository\CollectionItemRepository;
 use App\Repository\GameRepository;
+use App\Repository\ReviewRepository;
 use App\Service\RawgService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -132,7 +133,8 @@ class CollectorController extends AbstractController
         Game $game,
         RawgService $rawgService,
         CacheInterface $cache,
-        CollectionItemRepository $collectionItemRepository
+        CollectionItemRepository $collectionItemRepository,
+        ReviewRepository $reviewRepository
     ): Response {
         $gameId = $game->getId();
         $cacheKey = 'game_description_' . $gameId;
@@ -165,11 +167,23 @@ class CollectorController extends AbstractController
             $averagePrices[$currency] = $row['averagePrice'] !== null ? (float) $row['averagePrice'] : null;
         }
 
+        $reviewsRaw = $reviewRepository->findBy(['game' => $game, 'isValid' => true], ['createdAt' => 'DESC']);
+        $reviews = [];
+        foreach ($reviewsRaw as $review) {
+            $reviews[] = [
+                'id' => $review->getId(),
+                'comment' => $review->getComment(),
+                'createdAt' => $review->getCreatedAt()->format('d/m/Y H:i'),
+                'authorEmail' => $review->getAuthor()->getEmail(),
+            ];
+        }
+
         return $this->render('collector/game_show.html.twig', [
             'game' => $game,
             'description' => $description,
             'collectionCount' => $collectionCount,
             'averagePrices' => $averagePrices,
+            'reviews' => $reviews,
         ]);
     }
 }

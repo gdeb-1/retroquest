@@ -321,8 +321,24 @@ class CollectorControllerTest extends WebTestCase
             ->setReleaseYear(1989)
             ->setIsHidden(false);
 
+        $validatedReview = (new \App\Entity\Review())
+            ->setComment('Awesome game!')
+            ->setIsValid(true)
+            ->setCreatedAt(new \DateTimeImmutable())
+            ->setAuthor($user)
+            ->setGame($game);
+
+        $unvalidatedReview = (new \App\Entity\Review())
+            ->setComment('Pending moderation...')
+            ->setIsValid(false)
+            ->setCreatedAt(new \DateTimeImmutable())
+            ->setAuthor($user)
+            ->setGame($game);
+
         $this->entityManager->persist($user);
         $this->entityManager->persist($game);
+        $this->entityManager->persist($validatedReview);
+        $this->entityManager->persist($unvalidatedReview);
         $this->entityManager->flush();
 
         $this->client->loginUser($user);
@@ -342,6 +358,12 @@ class CollectorControllerTest extends WebTestCase
         self::assertArrayHasKey('description', $props);
         self::assertArrayHasKey('collectionCount', $props);
         self::assertArrayHasKey('averagePrices', $props);
+        
+        // Assert reviews
+        self::assertArrayHasKey('reviews', $props);
+        self::assertCount(1, $props['reviews']);
+        self::assertEquals('Awesome game!', $props['reviews'][0]['comment']);
+        self::assertEquals('collector_show@example.com', $props['reviews'][0]['authorEmail']);
     }
 }
 

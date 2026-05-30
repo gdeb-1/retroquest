@@ -78,6 +78,35 @@
           </div>
         </div>
       </div>
+
+      <!-- Reviews Section -->
+      <hr class="my-4 text-muted opacity-25">
+
+      <div class="reviews-section">
+        <h4 class="fw-bold text-dark mb-4 d-flex align-items-center gap-2">
+          <i class="bi bi-chat-text text-primary"></i>
+          <span>Avis de la communauté</span>
+          <span class="badge bg-secondary-subtle text-secondary fs-6 ms-2" v-if="reviews.length > 0">{{ reviews.length }}</span>
+        </h4>
+
+        <div class="row g-3" v-if="reviews.length > 0">
+          <div class="col-12" v-for="review in reviews" :key="review.id">
+            <div class="card border border-light-subtle rounded-3 p-3 bg-light bg-opacity-25">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="fw-semibold text-dark">{{ maskEmail(review.authorEmail) }}</span>
+                <span class="text-muted small">{{ review.createdAt }}</span>
+              </div>
+              <p class="text-secondary mb-0 fst-italic">
+                "{{ review.comment }}"
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="text-center py-4 bg-light rounded-3 border border-dashed text-secondary" v-else>
+          <i class="bi bi-chat-square-text fs-2 mb-2 d-block text-muted"></i>
+          <span>Aucun avis n'a encore été publié pour ce jeu.</span>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -101,11 +130,23 @@ defineProps({
   averagePrices: {
     type: Object,
     default: () => ({})
+  },
+  reviews: {
+    type: Array,
+    default: () => []
   }
 });
 
 const getRoute = (routeName, params = {}) => {
   return Routing.generate(routeName, params);
+};
+
+const maskEmail = (email) => {
+  if (!email) return '';
+  const [name, domain] = email.split('@');
+  if (!domain) return email;
+  const maskedName = name.length > 2 ? name[0] + '***' + name[name.length - 1] : name[0] + '***';
+  return `${maskedName}@${domain}`;
 };
 
 const formatPrice = (price) => {
