@@ -11,6 +11,59 @@
         />
       </div>
     </div>
+
+    <!-- Teleport Modal for Delete Confirmation -->
+    <Teleport to="body">
+      <div 
+        v-if="reviewToDelete" 
+        class="modal fade show" 
+        style="display: block; background-color: rgba(0, 0, 0, 0.5);" 
+        tabindex="-1" 
+        role="dialog"
+      >
+        <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content shadow-lg border-0 rounded-4">
+            <div class="modal-header border-bottom-0 pb-0">
+              <h5 class="modal-title fw-bold text-dark">Confirmer la suppression</h5>
+              <button 
+                type="button" 
+                class="btn-close" 
+                @click="reviewToDelete = null" 
+                aria-label="Close"
+              ></button>
+            </div>
+            <div class="modal-body py-3">
+              <p class="text-secondary small lh-base">
+                Voulez-vous vraiment supprimer définitivement cet avis ?
+              </p>
+              <div class="p-3 bg-light rounded-3 text-secondary small border-start border-danger border-3">
+                <strong>{{ reviewToDelete.authorEmail }}</strong> sur <em>{{ reviewToDelete.gameTitle }}</em> :<br/>
+                <span class="fst-italic">"{{ reviewToDelete.comment }}"</span>
+              </div>
+              <p class="text-danger small mt-2 mb-0 fw-semibold">
+                Cette action est irréversible.
+              </p>
+            </div>
+            <div class="modal-footer border-top-0 pt-0">
+              <button 
+                type="button" 
+                class="btn btn-secondary rounded-3 px-3 py-2 fw-medium" 
+                @click="reviewToDelete = null"
+              >
+                Annuler
+              </button>
+              <button 
+                type="button" 
+                class="btn btn-danger rounded-3 px-3 py-2 fw-medium shadow-sm" 
+                @click="confirmActionDelete"
+              >
+                Supprimer l'avis
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -28,6 +81,8 @@ const props = defineProps({
     required: true
   }
 });
+
+const reviewToDelete = ref(null);
 
 const columns = [
   { data: 'gameTitle', title: 'Jeu', className: 'fw-semibold' },
@@ -60,6 +115,7 @@ const columns = [
       if (!row.isValid) {
         buttons += `<button class="btn btn-sm btn-success me-2 btn-validate w-100 mb-1" data-id="${row.id}"><i class="bi bi-check-lg"></i> Valider</button>`;
       }
+      buttons += `<button class="btn btn-sm btn-outline-danger btn-delete w-100" data-id="${row.id}"><i class="bi bi-trash"></i> Supprimer</button>`;
       return buttons;
     }
   }
@@ -90,12 +146,19 @@ const path = (name, params = {}) => {
 
 const handleTableClick = (event) => {
   const validateButton = event.target.closest('.btn-validate');
+  const deleteButton = event.target.closest('.btn-delete');
 
   if (validateButton) {
     const reviewId = validateButton.dataset.id;
     const review = props.reviews.find(r => r.id == reviewId);
     if (review) {
       handleValidate(review);
+    }
+  } else if (deleteButton) {
+    const reviewId = deleteButton.dataset.id;
+    const review = props.reviews.find(r => r.id == reviewId);
+    if (review) {
+      confirmDelete(review);
     }
   }
 };
@@ -109,6 +172,27 @@ const handleValidate = (review) => {
   csrfInput.type = 'hidden';
   csrfInput.name = '_token';
   csrfInput.value = review.csrfTokenValidate;
+  form.appendChild(csrfInput);
+
+  document.body.appendChild(form);
+  form.submit();
+};
+
+const confirmDelete = (review) => {
+  reviewToDelete.value = review;
+};
+
+const confirmActionDelete = () => {
+  if (!reviewToDelete.value) return;
+
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = path('app_moderator_delete_review', { id: reviewToDelete.value.id });
+
+  const csrfInput = document.createElement('input');
+  csrfInput.type = 'hidden';
+  csrfInput.name = '_token';
+  csrfInput.value = reviewToDelete.value.csrfTokenDelete;
   form.appendChild(csrfInput);
 
   document.body.appendChild(form);

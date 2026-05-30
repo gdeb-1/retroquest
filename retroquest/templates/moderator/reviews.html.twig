@@ -18,7 +18,8 @@
             authorEmail: review.author.email,
             gameTitle: review.game.title,
             gameConsole: review.game.console,
-            csrfTokenValidate: csrf_token('validate_review_' ~ review.id)
+            csrfTokenValidate: csrf_token('validate_review_' ~ review.id),
+            csrfTokenDelete: csrf_token('delete_review_' ~ review.id)
         }]) %}
     {% endfor %}
 
