@@ -13,12 +13,17 @@ class ModeratorControllerTest extends WebTestCase
 {
     private KernelBrowser $client;
     private $entityManager;
+    private User $moderator;
+    private User $collector;
 
     protected function setUp(): void
     {
         $this->client = static::createClient();
         $container = static::getContainer();
         $this->entityManager = $container->get('doctrine.orm.entity_manager');
+
+        $this->moderator = $this->createModeratorUser();
+        $this->collector = $this->createCollectorUser();
     }
 
     private function createModeratorUser(): User
@@ -26,7 +31,8 @@ class ModeratorControllerTest extends WebTestCase
         $container = static::getContainer();
         $passwordHasher = $container->get('security.user_password_hasher');
 
-        $user = (new User())->setEmail('moderator_test_review@example.com');
+        $email = 'moderator_' . uniqid('', true) . '@example.com';
+        $user = (new User())->setEmail($email);
         $user->setPassword($passwordHasher->hashPassword($user, 'password'));
         $user->setRoles(['ROLE_MODERATOR']);
 
@@ -41,7 +47,8 @@ class ModeratorControllerTest extends WebTestCase
         $container = static::getContainer();
         $passwordHasher = $container->get('security.user_password_hasher');
 
-        $user = (new User())->setEmail('collector_test_review@example.com');
+        $email = 'collector_' . uniqid('', true) . '@example.com';
+        $user = (new User())->setEmail($email);
         $user->setPassword($passwordHasher->hashPassword($user, 'password'));
         $user->setRoles(['ROLE_COLLECTOR']);
 
@@ -81,8 +88,7 @@ class ModeratorControllerTest extends WebTestCase
 
     public function testReviewsPageUnauthorized(): void
     {
-        $user = $this->createCollectorUser();
-        $this->client->loginUser($user);
+        $this->client->loginUser($this->collector);
 
         $this->client->request('GET', '/moderator/review');
         self::assertResponseStatusCodeSame(403);
@@ -90,11 +96,9 @@ class ModeratorControllerTest extends WebTestCase
 
     public function testReviewsPageSuccess(): void
     {
-        $mod = $this->createModeratorUser();
-        $collector = $this->createCollectorUser();
-        $review = $this->createGameAndReview($collector);
+        $review = $this->createGameAndReview($this->collector);
 
-        $this->client->loginUser($mod);
+        $this->client->loginUser($this->moderator);
         $this->client->request('GET', '/moderator/review');
 
         self::assertResponseIsSuccessful();
@@ -103,11 +107,9 @@ class ModeratorControllerTest extends WebTestCase
 
     public function testValidateReviewSuccess(): void
     {
-        $mod = $this->createModeratorUser();
-        $collector = $this->createCollectorUser();
-        $review = $this->createGameAndReview($collector, false);
+        $review = $this->createGameAndReview($this->collector, false);
 
-        $this->client->loginUser($mod);
+        $this->client->loginUser($this->moderator);
         $this->client->request('GET', '/moderator/review');
         self::assertResponseIsSuccessful();
 
@@ -143,11 +145,9 @@ class ModeratorControllerTest extends WebTestCase
 
     public function testValidateReviewInvalidCsrf(): void
     {
-        $mod = $this->createModeratorUser();
-        $collector = $this->createCollectorUser();
-        $review = $this->createGameAndReview($collector, false);
+        $review = $this->createGameAndReview($this->collector, false);
 
-        $this->client->loginUser($mod);
+        $this->client->loginUser($this->moderator);
         $this->client->request('POST', '/moderator/review/validate/' . $review->getId(), [
             '_token' => 'invalid_csrf_token'
         ]);
@@ -164,11 +164,9 @@ class ModeratorControllerTest extends WebTestCase
 
     public function testDeleteReviewSuccess(): void
     {
-        $mod = $this->createModeratorUser();
-        $collector = $this->createCollectorUser();
-        $review = $this->createGameAndReview($collector, false);
+        $review = $this->createGameAndReview($this->collector, false);
 
-        $this->client->loginUser($mod);
+        $this->client->loginUser($this->moderator);
         $this->client->request('GET', '/moderator/review');
         self::assertResponseIsSuccessful();
 
@@ -204,11 +202,9 @@ class ModeratorControllerTest extends WebTestCase
 
     public function testDeleteReviewInvalidCsrf(): void
     {
-        $mod = $this->createModeratorUser();
-        $collector = $this->createCollectorUser();
-        $review = $this->createGameAndReview($collector, false);
+        $review = $this->createGameAndReview($this->collector, false);
 
-        $this->client->loginUser($mod);
+        $this->client->loginUser($this->moderator);
         $this->client->request('POST', '/moderator/review/delete/' . $review->getId(), [
             '_token' => 'invalid_csrf_token'
         ]);
