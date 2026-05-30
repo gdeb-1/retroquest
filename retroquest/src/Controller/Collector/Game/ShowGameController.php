@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller\Collector;
+namespace App\Controller\Collector\Game;
 
 use App\Entity\Game;
 use App\Entity\Review;
@@ -18,7 +18,7 @@ use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 
 #[IsGranted('ROLE_COLLECTOR')]
-class GameController extends AbstractController
+class ShowGameController extends AbstractController
 {
     #[Route('/collector/game/{id}', name: 'app_collector_game_show', methods: ['GET', 'POST'], options: ['expose' => true])]
     public function show(
@@ -113,4 +113,3 @@ class GameController extends AbstractController
         ]);
     }
 }
-

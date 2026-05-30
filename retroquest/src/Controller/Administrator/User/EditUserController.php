@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Controller\Administrator;
+namespace App\Controller\Administrator\User;
 
 use App\Entity\User;
+use App\Form\UserRoleType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -11,22 +12,12 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[IsGranted('ROLE_ADMIN')]
-class UsersController extends AbstractController
+class EditUserController extends AbstractController
 {
-    #[Route('/administrator/users', name: 'app_administrator_users', options: ['expose' => true])]
-    public function users(EntityManagerInterface $entityManager): Response
-    {
-        $users = $entityManager->getRepository(User::class)->findAll();
-
-        return $this->render('administrator/users.html.twig', [
-            'users' => $users,
-        ]);
-    }
-
     #[Route('/administrator/users/{id}/edit', name: 'app_administrator_edit_user')]
     public function editUser(User $user, Request $request, EntityManagerInterface $entityManager): Response
     {
-        $form = $this->createForm(\App\Form\UserRoleType::class, $user);
+        $form = $this->createForm(UserRoleType::class, $user);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller\Collector;
+namespace App\Controller\Collector\Catalog;
 
 use App\Repository\GameRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -9,7 +9,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[IsGranted('ROLE_COLLECTOR')]
-class GuildCatalogController extends AbstractController
+class ListGuildCatalogController extends AbstractController
 {
     #[Route('/collector/GuildCatalog', name: 'app_collector_guild_catalog', options: ['expose' => true])]
     public function guildCatalog(GameRepository $gameRepository): Response

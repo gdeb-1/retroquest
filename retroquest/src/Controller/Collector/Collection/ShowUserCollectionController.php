@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller\Collector;
+namespace App\Controller\Collector\Collection;
 
 use App\Entity\User;
 use App\Repository\CollectionItemRepository;
@@ -10,7 +10,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[IsGranted('ROLE_COLLECTOR')]
-class MyCollectionController extends AbstractController
+class ShowUserCollectionController extends AbstractController
 {
     #[Route('/collector/myCollection', name: 'app_collector_my_collection', options: ['expose' => true])]
     public function myCollection(CollectionItemRepository $collectionItemRepository): Response
