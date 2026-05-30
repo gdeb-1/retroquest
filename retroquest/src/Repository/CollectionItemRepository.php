@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\CollectionItem;
 use App\Entity\Game;
 use App\Entity\User;
+use App\Enum\ExchangeStatuses;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -60,6 +61,32 @@ class CollectionItemRepository extends ServiceEntityRepository
             ->join('c.game', 'g')
             ->andWhere('c.collector = :collector')
             ->setParameter('collector', $collector)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Finds collection items available for exchange, excluding those of the current user.
+     *
+     * An item is available if it is not associated with another active exchange (PENDING or ACCEPTED)
+     * and the game is not hidden.
+     *
+     * @return CollectionItem[]
+     */
+    public function findAvailableForExchange(User $currentUser): array
+    {
+        return $this->createQueryBuilder('c')
+            ->select('c', 'g', 'col')
+            ->join('c.game', 'g')
+            ->join('c.collector', 'col')
+            ->leftJoin('c.exchanges', 'e', 'WITH', 'e.status IN (:activeStatuses)')
+            ->andWhere('c.collector != :currentUser')
+            ->andWhere('g.isHidden = false')
+            ->andWhere('e.id IS NULL')
+            ->setParameter('activeStatuses', [
+                ExchangeStatuses::PENDING
+            ])
+            ->setParameter('currentUser', $currentUser)
             ->getQuery()
             ->getResult();
     }
