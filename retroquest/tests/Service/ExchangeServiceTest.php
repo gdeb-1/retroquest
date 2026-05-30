@@ -220,7 +220,7 @@ class ExchangeServiceTest extends TestCase
         $otherExchange->addItem($itemReceiver);
         $itemReceiver->addExchange($otherExchange);
 
-        $this->assertFalse($this->exchangeService->isDirectExchangeEligible($exchange));
+        $this->assertTrue($this->exchangeService->isDirectExchangeEligible($exchange));
     }
 
     public function testIsDirectExchangeEligibleItemInAnotherRejectedOrCancelledExchange(): void

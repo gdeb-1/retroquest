@@ -8,5 +8,4 @@ enum ExchangeStatuses: string
     case ACCEPTED = 'accepted';
     case REJECTED = 'rejected';
     case CANCELLED = 'cancelled';
-    case FINISHED = 'finished'; //items swap have been done (confirmed by both)
 }

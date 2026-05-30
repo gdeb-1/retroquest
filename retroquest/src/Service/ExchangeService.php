@@ -15,7 +15,7 @@ class ExchangeService
      * 1. Proposer and Receiver must be different.
      * 2. The exchange must contain at least one item from the Proposer and at least one item from the Receiver.
      * 3. Every item in the exchange must belong to either the Proposer or the Receiver.
-     * 4. None of the items in the exchange can be associated with another active exchange (PENDING or ACCEPTED).
+     * 4. None of the items in the exchange can be associated with another active exchange (PENDING).
      */
     public function isDirectExchangeEligible(Exchange $exchange): bool
     {
@@ -52,7 +52,7 @@ class ExchangeService
             foreach ($item->getExchanges() as $otherExchange) {
                 if ($otherExchange !== $exchange) {
                     $otherStatus = $otherExchange->getStatus();
-                    if ($otherStatus === ExchangeStatuses::PENDING || $otherStatus === ExchangeStatuses::ACCEPTED) {
+                    if ($otherStatus === ExchangeStatuses::PENDING) {
                         return false;
                     }
                 }
