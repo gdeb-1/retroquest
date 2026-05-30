@@ -66,6 +66,10 @@ La clef API RAWG est dans le .env (volontairement push sur github)
 36. implémentation test service echange
 37. implémentation hiérarchie des roles
 38. implémentation gestion des roles utilisateurs
+39. implémentation listing des commentaire pour le modérateur
+40. implémentation suppression des commentaire par le modérateur
+41. implémentation validation des commentaire par le modérateur
+42. implémentation de la fiche d'un jeu
 
 
 ## clef api rawg.io: 

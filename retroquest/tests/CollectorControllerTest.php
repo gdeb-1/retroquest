@@ -305,4 +305,31 @@ class CollectorControllerTest extends WebTestCase
         $item = $this->entityManager->getRepository(CollectionItem::class)->find($collectionItem->getId());
         self::assertNull($item);
     }
+
+    public function testShowGameSuccess(): void
+    {
+        $container = static::getContainer();
+        $passwordHasher = $container->get('security.user_password_hasher');
+
+        $user = (new User())->setEmail('collector_show@example.com');
+        $user->setPassword($passwordHasher->hashPassword($user, 'password'));
+        $user->setRoles(['ROLE_COLLECTOR']);
+        
+        $game = (new Game())
+            ->setTitle('Super Mario Land')
+            ->setConsole('Game Boy')
+            ->setReleaseYear(1989)
+            ->setIsHidden(false);
+
+        $this->entityManager->persist($user);
+        $this->entityManager->persist($game);
+        $this->entityManager->flush();
+
+        $this->client->loginUser($user);
+        $this->client->request('GET', '/collector/game/' . $game->getId());
+        
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('h1', 'Super Mario Land');
+    }
 }
+

@@ -14,6 +14,7 @@
 <script setup>
 import DataTable from 'datatables.net-vue3';
 import DataTablesCore from 'datatables.net-dt';
+import Routing from 'fos-router';
 
 DataTable.use(DataTablesCore);
 
@@ -24,10 +25,23 @@ defineProps({
   }
 });
 
+const getRoute = (routeName, id) => {
+  return Routing.generate(routeName, { id });
+};
+
 const columns = [
   { data: 'title', title: 'Titre' },
   { data: 'console', title: 'Console' },
-  { data: 'releaseYear', title: 'Année de sortie' }
+  { data: 'releaseYear', title: 'Année de sortie' },
+  {
+    data: null,
+    title: 'Actions',
+    orderable: false,
+    className: 'text-end pe-4',
+    render: (data, type, row) => {
+      return `<a class="btn btn-sm btn-outline-primary" href="${getRoute('app_collector_game_show', row.id)}"><i class="bi bi-eye"></i> Voir la fiche</a>`;
+    }
+  }
 ];
 
 const options = {

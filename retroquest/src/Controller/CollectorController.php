@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Entity\CollectionItem;
+use App\Entity\Game;
 use App\Form\CollectionItemType;
 use App\Repository\CollectionItemRepository;
 use App\Repository\GameRepository;
@@ -121,5 +122,13 @@ class CollectorController extends AbstractController
         $this->addFlash('success', 'Le jeu a été retiré de votre collection.');
 
         return $this->redirectToRoute('app_collector_my_collection');
+    }
+
+    #[Route('/collector/game/{id}', name: 'app_collector_game_show', options: ['expose' => true])]
+    public function show(Game $game): Response
+    {
+        return $this->render('collector/game_show.html.twig', [
+            'game' => $game,
+        ]);
     }
 }

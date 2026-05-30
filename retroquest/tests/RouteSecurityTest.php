@@ -55,6 +55,7 @@ class RouteSecurityTest extends WebTestCase
             ['/collector/myCollection'],
             ['/collector/GuildCatalog'],
             ['/collector/addCollectionItem'],
+            ['/collector/game/1'],
         ];
     }
 
