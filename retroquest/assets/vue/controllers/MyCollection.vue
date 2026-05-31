@@ -13,6 +13,31 @@
       </a>
     </div>
 
+    <div v-if="hasEstimations" class="card border border-light-subtle rounded-4 shadow-sm p-3 mb-4 bg-white">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div class="d-flex align-items-center gap-3">
+          <div class="rounded-3 bg-secondary-subtle p-2.5 d-flex align-items-center justify-content-center text-secondary">
+            <i class="bi bi-graph-up-arrow fs-4"></i>
+          </div>
+          <div>
+            <h5 class="fw-bold mb-0 text-dark">Estimation de la collection</h5>
+            <p class="small text-secondary mb-0">Valeur totale estimée de vos jeux par devise.</p>
+          </div>
+        </div>
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+          <div 
+            v-for="(value, currency) in estimations" 
+            :key="currency"
+            v-show="value > 0"
+            class="px-3 py-1.5 rounded-3 bg-light border border-light-subtle d-flex align-items-center gap-2"
+          >
+            <span class="text-secondary small text-uppercase fw-semibold">{{ currency }} :</span>
+            <span class="fw-bold text-primary">{{ formatCurrency(currency) }}{{ formatPrice(value) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div v-if="items.length > 0" class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5 g-4">
       <div 
         v-for="item in items" 
@@ -87,13 +112,17 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import CollectionItemCard from './CollectionItemCard.vue';
 import Routing from 'fos-router';
 
 const props = defineProps({
   items: {
     type: Array,
+    required: true
+  },
+  estimations: {
+    type: Object,
     required: true
   },
   csrfToken: {
@@ -104,6 +133,23 @@ const props = defineProps({
 
 const itemToDelete = ref(null);
 
+const hasEstimations = computed(() => {
+  if (!props.estimations) return false;
+  return Object.values(props.estimations).some(value => value > 0);
+});
+
+const formatPrice = (price) => {
+  return (price / 100).toFixed(2);
+};
+
+const formatCurrency = (currencyCode) => {
+  const symbols = {
+    'EUR': '€',
+    'USD': '$',
+    'GBP': '£'
+  };
+  return symbols[currencyCode] || currencyCode;
+};
 
 const onDelete = (id) => {
   const item = props.items.find(i => i.id === id);

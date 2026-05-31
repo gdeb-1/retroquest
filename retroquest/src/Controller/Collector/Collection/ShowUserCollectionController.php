@@ -4,6 +4,7 @@ namespace App\Controller\Collector\Collection;
 
 use App\Entity\User;
 use App\Repository\CollectionItemRepository;
+use App\Service\EstimationService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -13,8 +14,10 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class ShowUserCollectionController extends AbstractController
 {
     #[Route('/collector/myCollection', name: 'app_collector_my_collection', options: ['expose' => true])]
-    public function myCollection(CollectionItemRepository $collectionItemRepository): Response
-    {
+    public function myCollection(
+        CollectionItemRepository $collectionItemRepository,
+        EstimationService $estimationService
+    ): Response {
         /** @var User $user */
         $user = $this->getUser();
         $collectionItems = $collectionItemRepository->findByCollectorWithGame($user);
@@ -36,8 +39,11 @@ class ShowUserCollectionController extends AbstractController
             ];
         }
 
+        $estimations = $estimationService->calculateCollectionValue($user);
+
         return $this->render('collector/my_collection.html.twig', [
             'collectionItemsData' => $collectionItemsData,
+            'estimations' => $estimations,
         ]);
     }
 }
