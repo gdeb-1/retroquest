@@ -15,7 +15,6 @@
         </a>
         <ul class="dropdown-menu border-0 shadow-sm">
           <li><a class="dropdown-item py-2" :href="getRoute('app_collector_my_collection')">Gérer ma collection</a></li>
-          <li><a class="dropdown-item py-2" href="#">Estimer ma collection</a></li>
         </ul>
       </div>
 

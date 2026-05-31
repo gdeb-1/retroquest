@@ -82,8 +82,9 @@ La clef API RAWG est dans le .env (volontairement push sur github)
 52. vérification et correction test echanges
 53. implémentation validation d'un echange dans le service
 54. implémentation de la validation d'un echange (controller + front)
-
-
+55. implémentation service estimation
+56. implémentation test service estimation
+57. implémentation front estimation (composant vue)
 
 ## clef api rawg.io: 
     7ed5cc4a22894491881a735919d2e539
