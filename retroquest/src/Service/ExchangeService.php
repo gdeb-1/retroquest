@@ -77,4 +77,49 @@ class ExchangeService
 
         return true;
     }
+
+    /**
+     * Valide un échange en attente.
+     *
+     * Cela passe le statut à ACCEPTED, échange la propriété de tous les objets de l'échange
+     * entre le proposant et le destinataire, et annule automatiquement les autres échanges
+     * en attente qui impliquent ces mêmes objets.
+     *
+     * @throws \LogicException Si l'échange n'est pas en attente ou s'il n'est pas éligible.
+     */
+    public function validateExchange(Exchange $exchange): void
+    {
+        if ($exchange->getStatus() !== ExchangeStatuses::PENDING) {
+            throw new \LogicException("Seuls les échanges en attente peuvent être validés.");
+        }
+
+        if (!$this->isDirectExchangeEligible($exchange)) {
+            throw new \LogicException("Cet échange n'est pas éligible et ne peut pas être validé.");
+        }
+
+        $proposer = $exchange->getProposer();
+        $receiver = $exchange->getReceiver();
+
+        foreach ($exchange->getItems() as $item) {
+            // Annule les autres échanges en attente qui contiennent cet objet
+            foreach ($item->getExchanges() as $otherExchange) {
+                if ($otherExchange !== $exchange && $otherExchange->getStatus() === ExchangeStatuses::PENDING) {
+                    $otherExchange->setStatus(ExchangeStatuses::CANCELLED);
+                }
+            }
+
+            // Transfert de propriété
+            $currentCollector = $item->getCollector();
+            if ($currentCollector === $proposer) {
+                $proposer->removeCollectionItem($item);
+                $receiver->addCollectionItem($item);
+            } elseif ($currentCollector === $receiver) {
+                $receiver->removeCollectionItem($item);
+                $proposer->addCollectionItem($item);
+            }
+        }
+
+        $exchange->setStatus(ExchangeStatuses::ACCEPTED);
+    }
 }
+

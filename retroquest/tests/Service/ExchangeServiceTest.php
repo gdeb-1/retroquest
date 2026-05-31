@@ -248,4 +248,141 @@ class ExchangeServiceTest extends TestCase
             ],
         ];
     }
+
+    public function testValidateExchangeSuccess(): void
+    {
+        $proposer = new User();
+        $proposer->setEmail('proposer@example.com');
+        $receiver = new User();
+        $receiver->setEmail('receiver@example.com');
+
+        $exchange = new Exchange();
+        $exchange->setStatus(ExchangeStatuses::PENDING);
+        $exchange->setProposer($proposer);
+        $exchange->setReceiver($receiver);
+
+        $itemP = new CollectionItem();
+        $proposer->addCollectionItem($itemP);
+        $exchange->addItem($itemP);
+
+        $itemR = new CollectionItem();
+        $receiver->addCollectionItem($itemR);
+        $exchange->addItem($itemR);
+
+        // Verify initial state
+        $this->assertSame($proposer, $itemP->getCollector());
+        $this->assertSame($receiver, $itemR->getCollector());
+        $this->assertTrue($proposer->getCollectionItems()->contains($itemP));
+        $this->assertTrue($receiver->getCollectionItems()->contains($itemR));
+        $this->assertFalse($proposer->getCollectionItems()->contains($itemR));
+        $this->assertFalse($receiver->getCollectionItems()->contains($itemP));
+
+        // Validate the exchange
+        $this->exchangeService->validateExchange($exchange);
+
+        // Verify status has changed to ACCEPTED
+        $this->assertSame(ExchangeStatuses::ACCEPTED, $exchange->getStatus());
+
+        // Verify ownership has been swapped
+        $this->assertSame($receiver, $itemP->getCollector());
+        $this->assertSame($proposer, $itemR->getCollector());
+        $this->assertTrue($receiver->getCollectionItems()->contains($itemP));
+        $this->assertTrue($proposer->getCollectionItems()->contains($itemR));
+        $this->assertFalse($proposer->getCollectionItems()->contains($itemP));
+        $this->assertFalse($receiver->getCollectionItems()->contains($itemR));
+    }
+
+    public function testValidateExchangeCancelsConflictingPendingExchanges(): void
+    {
+        $proposer = new User();
+        $proposer->setEmail('proposer@example.com');
+        $receiver = new User();
+        $receiver->setEmail('receiver@example.com');
+        $thirdParty = new User();
+        $thirdParty->setEmail('third@example.com');
+
+        $exchange = new Exchange();
+        $exchange->setStatus(ExchangeStatuses::PENDING);
+        $exchange->setProposer($proposer);
+        $exchange->setReceiver($receiver);
+
+        $itemP = new CollectionItem();
+        $proposer->addCollectionItem($itemP);
+        $exchange->addItem($itemP);
+
+        $itemR = new CollectionItem();
+        $receiver->addCollectionItem($itemR);
+        $exchange->addItem($itemR);
+
+        // Create a conflicting pending exchange with the third party that also contains $itemP
+        $otherExchange = new Exchange();
+        $otherExchange->setStatus(ExchangeStatuses::PENDING);
+        $otherExchange->setProposer($proposer);
+        $otherExchange->setReceiver($thirdParty);
+        $otherExchange->addItem($itemP);
+        $itemP->addExchange($otherExchange);
+
+        // Create another exchange that is already ACCEPTED (should NOT be cancelled)
+        $acceptedExchange = new Exchange();
+        $acceptedExchange->setStatus(ExchangeStatuses::ACCEPTED);
+        $acceptedExchange->setProposer($proposer);
+        $acceptedExchange->setReceiver($thirdParty);
+        $acceptedExchange->addItem($itemP);
+        $itemP->addExchange($acceptedExchange);
+
+        // Validate the exchange
+        $this->exchangeService->validateExchange($exchange);
+
+        // Verify the conflicting PENDING exchange is now CANCELLED
+        $this->assertSame(ExchangeStatuses::CANCELLED, $otherExchange->getStatus());
+
+        // Verify the already ACCEPTED exchange is still ACCEPTED
+        $this->assertSame(ExchangeStatuses::ACCEPTED, $acceptedExchange->getStatus());
+    }
+
+    public function testValidateExchangeThrowsExceptionIfNotPending(): void
+    {
+        $proposer = new User();
+        $proposer->setEmail('proposer@example.com');
+        $receiver = new User();
+        $receiver->setEmail('receiver@example.com');
+
+        $exchange = new Exchange();
+        $exchange->setStatus(ExchangeStatuses::ACCEPTED); // Not PENDING
+        $exchange->setProposer($proposer);
+        $exchange->setReceiver($receiver);
+
+        $itemP = new CollectionItem();
+        $proposer->addCollectionItem($itemP);
+        $exchange->addItem($itemP);
+
+        $itemR = new CollectionItem();
+        $receiver->addCollectionItem($itemR);
+        $exchange->addItem($itemR);
+
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage("Seuls les échanges en attente peuvent être validés.");
+
+        $this->exchangeService->validateExchange($exchange);
+    }
+
+    public function testValidateExchangeThrowsExceptionIfNotEligible(): void
+    {
+        $proposer = new User();
+        $proposer->setEmail('proposer@example.com');
+        $receiver = new User();
+        $receiver->setEmail('receiver@example.com');
+
+        $exchange = new Exchange();
+        $exchange->setStatus(ExchangeStatuses::PENDING);
+        $exchange->setProposer($proposer);
+        $exchange->setReceiver($receiver);
+
+        // Missing items completely, so isDirectExchangeEligible() will return false
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage("Cet échange n'est pas éligible et ne peut pas être validé.");
+
+        $this->exchangeService->validateExchange($exchange);
+    }
 }
+
