@@ -106,13 +106,8 @@ class CollectionItemRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('ci')
             ->select('ci', 'g')
             ->join('ci.game', 'g')
-            ->leftJoin('ci.exchanges', 'e', 'WITH', 'e.status IN (:activeStatuses)')
             ->andWhere('ci.collector = :collector')
             ->andWhere('g.isHidden = false')
-            ->andWhere('e.id IS NULL')
-            ->setParameter('activeStatuses', [
-                ExchangeStatuses::PENDING
-            ])
             ->setParameter('collector', $collector)
             ->getQuery()
             ->getResult();
