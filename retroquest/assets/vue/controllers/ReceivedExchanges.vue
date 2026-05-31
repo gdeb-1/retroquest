@@ -100,6 +100,21 @@
 
           </div>
         </div>
+
+        <!-- Card Footer -->
+        <div 
+          v-if="exchange.status === 'pending'" 
+          class="card-footer bg-white border-top border-light-subtle py-3 px-4 d-flex justify-content-end"
+        >
+          <button 
+            type="button" 
+            class="btn btn-outline-danger btn-sm rounded-3 px-3 py-2 fw-semibold d-flex align-items-center gap-2 hover-lift"
+            @click="triggerReject(exchange)"
+          >
+            <i class="bi bi-x-circle"></i>
+            <span>Refuser la proposition</span>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -119,6 +134,65 @@
         Rechercher un échange
       </a>
     </div>
+    <!-- Teleport Modal for Rejection Confirmation -->
+    <Teleport to="body">
+      <div 
+        v-if="exchangeToReject" 
+        class="modal fade show" 
+        style="display: block; background-color: rgba(0, 0, 0, 0.5);" 
+        tabindex="-1" 
+        role="dialog"
+      >
+        <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content shadow-lg border-0 rounded-4">
+            <div class="modal-header border-bottom-0 pb-0">
+              <h5 class="modal-title fw-bold text-dark">Refuser la proposition</h5>
+              <button 
+                type="button" 
+                class="btn-close" 
+                @click="exchangeToReject = null" 
+                aria-label="Close"
+              ></button>
+            </div>
+            <div class="modal-body py-3">
+              <p class="text-secondary small lh-base">
+                Êtes-vous sûr de vouloir refuser cette proposition d'échange de la part de <strong>{{ exchangeToReject.proposer.email }}</strong> ?
+              </p>
+              
+              <div class="p-3 bg-light rounded-3 text-secondary small border-start border-danger border-3 mb-3">
+                <div class="fw-bold text-dark-emphasis mb-1">Résumé de l'échange :</div>
+                <div class="mb-1">
+                  <strong>On vous propose :</strong> {{ exchangeToReject.offeredItems.map(i => i.game.title).join(', ') }}
+                </div>
+                <div>
+                  <strong>On vous demande :</strong> {{ exchangeToReject.requestedItems.map(i => i.game.title).join(', ') }}
+                </div>
+              </div>
+
+              <p class="text-danger small mt-2 mb-0 fw-semibold">
+                Cette action est définitive et l'échange sera marqué comme refusé.
+              </p>
+            </div>
+            <div class="modal-footer border-top-0 pt-0">
+              <button 
+                type="button" 
+                class="btn btn-secondary rounded-3 px-3 py-2 fw-medium" 
+                @click="exchangeToReject = null"
+              >
+                Conserver la demande
+              </button>
+              <button 
+                type="button" 
+                class="btn btn-danger rounded-3 px-3 py-2 fw-medium shadow-sm" 
+                @click="confirmReject"
+              >
+                Confirmer le refus
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -135,6 +209,28 @@ const props = defineProps({
 });
 
 const activeFilter = ref('all');
+const exchangeToReject = ref(null);
+
+const triggerReject = (exchange) => {
+  exchangeToReject.value = exchange;
+};
+
+const confirmReject = () => {
+  if (!exchangeToReject.value) return;
+
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = path('app_collector_exchange_reject', { id: exchangeToReject.value.id });
+
+  const csrfInput = document.createElement('input');
+  csrfInput.type = 'hidden';
+  csrfInput.name = '_token';
+  csrfInput.value = exchangeToReject.value.csrfTokenReject;
+  form.appendChild(csrfInput);
+
+  document.body.appendChild(form);
+  form.submit();
+};
 
 
 const filteredExchanges = computed(() => {

@@ -7,6 +7,7 @@ use App\Repository\ExchangeRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[IsGranted('ROLE_COLLECTOR')]
@@ -14,7 +15,8 @@ class ReceivedExchangesController extends AbstractController
 {
     #[Route('/collector/exchange/received', name: 'app_collector_exchange_received', options: ['expose' => true])]
     public function listReceived(
-        ExchangeRepository $exchangeRepository
+        ExchangeRepository $exchangeRepository,
+        CsrfTokenManagerInterface $csrfTokenManager
     ): Response {
         /** @var User $currentUser */
         $currentUser = $this->getUser();
@@ -57,6 +59,7 @@ class ReceivedExchangesController extends AbstractController
                 ],
                 'requestedItems' => $requestedItems,
                 'offeredItems' => $offeredItems,
+                'csrfTokenReject' => $csrfTokenManager->getToken('reject_exchange_' . $exchange->getId())->getValue(),
             ];
         }
 
