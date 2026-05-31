@@ -7,6 +7,22 @@ La clef API RAWG est dans le .env (volontairement push sur github)
 ## Executer les tests :
 - make test -> création de la bdd de test + exécution des tests.
 
+Si make n'est pas disponible : 
+Installation : 
+- docker compose up -d
+- docker compose exec php php bin/console doctrine:database:create --if-not-exists
+- docker compose exec php php bin/console doctrine:migrations:migrate
+- docker compose exec php php bin/console doctrine:fixtures:load --append
+- docker compose exec php php bin/console assets:install --symlink public
+- docker compose exec php npm install
+- docker compose exec php npm run build
+
+Executer les tests :
+- docker compose exec php php bin/console doctrine:database:drop --env=test --force --if-exists
+- docker compose exec php php bin/console doctrine:database:create --env=test --if-not-exists
+- docker compose exec php php bin/console doctrine:migrations:migrate --env=test --no-interaction
+- docker compose exec php php bin/phpunit
+
 ## Stack tech: 
 - Symfony 7.4 (Monolithique, pas d'API REST)
 - Base de données relationnelle MySQL
@@ -85,6 +101,7 @@ La clef API RAWG est dans le .env (volontairement push sur github)
 55. implémentation service estimation
 56. implémentation test service estimation
 57. implémentation front estimation (composant vue)
+58. refactorisation structure fichier vue.js
 
 ## clef api rawg.io: 
     7ed5cc4a22894491881a735919d2e539
