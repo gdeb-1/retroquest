@@ -7,8 +7,8 @@ La clef API RAWG est dans le .env (volontairement push sur github)
 ## Executer les tests :
 - make test -> création de la bdd de test + exécution des tests.
 
-Si make n'est pas disponible : 
-Installation : 
+## Si make n'est pas disponible : 
+### Installation : 
 - docker compose up -d
 - docker compose exec php php bin/console doctrine:database:create --if-not-exists
 - docker compose exec php php bin/console doctrine:migrations:migrate
@@ -17,10 +17,12 @@ Installation :
 - docker compose exec php npm install
 - docker compose exec php npm run build
 
-Executer les tests :
+### Executer les tests :
+1. préparation de la base de donnée : 
 - docker compose exec php php bin/console doctrine:database:drop --env=test --force --if-exists
 - docker compose exec php php bin/console doctrine:database:create --env=test --if-not-exists
 - docker compose exec php php bin/console doctrine:migrations:migrate --env=test --no-interaction
+2. execution des tests :
 - docker compose exec php php bin/phpunit
 
 ## Stack tech: 
@@ -28,6 +30,60 @@ Executer les tests :
 - Base de données relationnelle MySQL
 - Vue.js avec Symfony UX
 - [datatables](https://datatables.net/manual/vue)
+
+## clef api rawg.io (deja dans le .env volontairement commit): 
+    7ed5cc4a22894491881a735919d2e539
+    https://api.rawg.io/docs/
+
+## compte utilisateurs : 
+Mot de passe unique RetroPassword123! \
+comptes disponibles :
+- 9 compte collector (collector1@example.com, collector2@example.com, ...)
+- 2 compte modérateur (moderator1@example.com, moderator2@example.com)
+- 1 compte administrateur (admin@example.com)
+
+## Implémentation : 
+1. Gestion utilisateur hiérarchique: 
+    - L'Administrateur : Il a le contrôle total. Il gère les rôles et les accès des membres.
+        * gestion des membres dans la page [Gérer les droits des utilisateurs](http://localhost/administrator/users)
+    - Le Modérateur : Il veille au bon comportement de la communauté et à la propreté du catalogue. Il dispose d'un espace pour valider ou supprimer les avis laissés par les collectionneurs, et peut masquer une fiche de jeu si elle lui est signalée comme obsolète ou erronée.
+        * gestion des commentaires dans la page [Modération des avis](http://localhost/moderator/review)
+        * gestion des jeux dans la page [Gestion du catalogue de jeux](http://localhost/moderator/games)
+            + TODO : Signaler un jeu
+    - Le Collectionneur : Il gère son activité de membre. Il peut ajouter des jeux à sa collection personnelle, laisser des avis, et proposer ou réaliser des échanges directement avec d'autres membres.
+        * gestion de sa collection dans la page [Ma collection](http://localhost/collector/myCollection)
+        * Ajouter un avis sur un jeu dans la page du jeu en question [Fiche jeu](http://localhost/collector/game/1)
+        * Rechercher des jeu a echanger sur la page [Rechercher un Échange](http://localhost/collector/exchange/search)
+        * Proposer un echange sur la page [Proposer un échange](http://localhost/collector/exchange/propose/20)
+        * Consulter et gerer (Annuler) les echanges envoyer sur la page [Mes Demandes Envoyées](http://localhost/collector/exchange/sent)
+        * Consulter et gerer (accepter/refuser) les echanges recu sur la page [Mes Demandes Reçues](http://localhost/collector/exchange/received)
+2. Route ouverte & API Externe (Le "Price Guide")
+    - L'application doit proposer une route accessible sans authentification qui affiche les
+    tendances ou les prix du marché rétro. \
+    • Scénario : Utilisation d'une API publique (ex: RAWG, ou une API de conversion de devises/marché financier) pour enrichir les fiches ou afficher des données externes globales. \
+    • Contrainte : Utilisation obligatoire du HttpClient de Symfony. L'application doit gérer les erreurs si l'API externe est indisponible sans interrompre le rendu de la page
+        * La page d'accueil affiche les jeu recement ajouter aux collection utilisateur et le prix moyen payer (en devise) [Page d'accueil](http://localhost/)
+        * Utilisation de RAWG pour récupérer la description des jeux
+3. Datatable paginé (Le Catalogue de la Guilde)
+    - Une page réservée aux utilisateurs connectés doit lister l'intégralité des jeux et consoles de la base de données globale.\
+    • Cette table doit obligatoirement intégrer une pagination, un tri par colonne (par console, par titre, par année de sortie), et un champ de recherche textuel pour filtrer les données
+        * Catalogue des jeu (affiche tous les jeu de la table 'game') disponible sur la page [Catalogue de la Guilde](http://localhost/collector/GuildCatalog)
+            + TODO : Ajouter le possibilité d'ajouter un jeu au catalogue
+4. Tests Unitaires et Fonctionnels
+    - Tests Unitaires : Valider la logique métier (ex: l'éligibilité d'un échange direct entre deux membres selon les pièces possédées dans leur collection respective, ou le calcul de la valeur estimée d'un inventaire).
+        * Le service [ExchangeService.php](retroquest/src/Service/ExchangeService.php) défini les régles métier afin de valider un echange (et les actions associées lors de la validation)
+        * Les tests de ce service sont disponibles dans le fichier [ExchangeServiceTest.php](retroquest/tests/Service/ExchangeServiceTest.php)
+        * Le service [EstimationService.php](retroquest/src/Service/EstimationService.php) défini les régles métier afin de calculer la valeur estimée d'un inventaire.
+        * Les tests de ce service sont disponibles dans le fichier [EstimationServiceTest.php](retroquest/tests/Service/EstimationServiceTest.php)
+    - Tests Fonctionnels : Valider la sécurité des routes (ex: refus d'accès 403 pour un rôle non autorisé sur les pages d'administration ou de modération) et le parcours nominal d'ajout d'une pièce à la collection d’un membre.
+        * Les test permetant de valider la sécurité des routes sont disponibles dans le fichier [RouteSecurityTest.php](retroquest/tests/RouteSecurityTest.php)
+        * Les test permetant de valider le parcours nominal d'ajout d'une pièce à la collection d’un membre sont disponibles dans le fichier [AddCollectionItemControllerTest.php](retroquest/tests/Controller/Collector/Collection/AddCollectionItemControllerTest.php)
+
+### information supplémentaire :
+- L'utilisation de fos-router + package npm associé génère des warning de securité lors du 'npm install', ces warnings sont liés à des dépendances, le projet étant un prototype je n'ai pas corrigé, mais le problème est connu.
+- Exemple d'utilisation d'une exception personnalisé:
+    * [InvalidStateExchangeException.php](retroquest/src/Exception/InvalidStateExchangeException.php)
+    * [ExchangeService.php](retroquest/src/Service/ExchangeService.php) ligne 49
 
 ## étapes : 
 1. init Git
@@ -102,7 +158,5 @@ Executer les tests :
 56. implémentation test service estimation
 57. implémentation front estimation (composant vue)
 58. refactorisation structure fichier vue.js
-
-## clef api rawg.io: 
-    7ed5cc4a22894491881a735919d2e539
-    https://api.rawg.io/docs/
+59. ajout role collector a l'inscription 
+60. gestion teardown des tests
