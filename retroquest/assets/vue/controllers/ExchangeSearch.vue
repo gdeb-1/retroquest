@@ -29,13 +29,9 @@
               ></button>
             </div>
             <div class="modal-body py-3">
-              <p class="text-secondary small lh-base">
+              <p class="text-secondary small lh-base mb-0">
                 Vous vous apprêtez à proposer un échange avec <strong>{{ selectedItem.collector.email }}</strong> pour le jeu <strong>{{ selectedItem.game.title }}</strong> ({{ selectedItem.game.console }}).
               </p>
-              <div class="alert alert-info border-0 rounded-3 mb-0 small">
-                <i class="bi bi-info-circle-fill me-2"></i>
-                La fonctionnalité complète de proposition d'échanges (sélection des contreparties, notification du membre, etc.) arrive bientôt !
-              </div>
             </div>
             <div class="modal-footer border-top-0 pt-0">
               <button 
@@ -43,8 +39,14 @@
                 class="btn btn-secondary rounded-3" 
                 @click="selectedItem = null"
               >
-                Fermer
+                Annuler
               </button>
+              <a 
+                :href="`/collector/exchange/propose/${selectedItem.id}`" 
+                class="btn btn-primary rounded-3"
+              >
+                Confirmer et choisir mes contreparties
+              </a>
             </div>
           </div>
         </div>
