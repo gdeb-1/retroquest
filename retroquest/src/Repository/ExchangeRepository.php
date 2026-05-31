@@ -40,6 +40,23 @@ class ExchangeRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * @return Exchange[]
+     */
+    public function findSentExchanges(User $proposer): array
+    {
+        return $this->createQueryBuilder('e')
+            ->leftJoin('e.items', 'i')
+            ->leftJoin('i.game', 'g')
+            ->leftJoin('i.collector', 'c')
+            ->andWhere('e.proposer = :proposer')
+            ->setParameter('proposer', $proposer)
+            ->orderBy('e.propositionDate', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+
 
     //    /**
     //     * @return Exchange[] Returns an array of Exchange objects

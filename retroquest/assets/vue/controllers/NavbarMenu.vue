@@ -31,7 +31,7 @@
         </a>
         <ul class="dropdown-menu border-0 shadow-sm">
           <li><a class="dropdown-item py-2" :href="getRoute('app_collector_exchange_search')">Rechercher un échange</a></li>
-          <li><a class="dropdown-item py-2" href="#">Mes demandes envoyées</a></li>
+          <li><a class="dropdown-item py-2" :href="getRoute('app_collector_exchange_sent')">Mes demandes envoyées</a></li>
           <li><a class="dropdown-item py-2" href="#">Mes demandes reçues</a></li>
         </ul>
       </div>
