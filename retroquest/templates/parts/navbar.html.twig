@@ -4,14 +4,14 @@
             <span class="logo-icon">🎮</span> Retroquest
         </a>
         {% if app.user is not null %}
-            <div {{ vue_component('NavbarMenu', {
+            <div {{ vue_component('components/NavbarMenu', {
                 isCollector: is_granted('ROLE_COLLECTOR'),
                 isModerator: is_granted('ROLE_MODERATOR'),
                 isAdmin: is_granted('ROLE_ADMIN')
             }) }}></div>
         {% endif %}
         <div class="ms-auto">
-            <div {{ vue_component('AuthButton', {
+            <div {{ vue_component('components/AuthButton', {
                 isLoggedIn: app.user is not null,
                 loginUrl: path('app_login'),
                 registerUrl: path('app_register'),

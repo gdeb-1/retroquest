@@ -113,7 +113,7 @@
 
 <script setup>
 import { ref, computed } from 'vue';
-import CollectionItemCard from './CollectionItemCard.vue';
+import CollectionItemCard from '../components/CollectionItemCard.vue';
 import Routing from 'fos-router';
 
 const props = defineProps({

@@ -82,7 +82,7 @@ class ShowUserCollectionControllerTest extends WebTestCase
 
         // Verify the HTML response contains the vue component with collectionItemsData and estimations
         $responseContent = $this->client->getResponse()->getContent();
-        self::assertStringContainsString('MyCollection', $responseContent);
+        self::assertStringContainsString('pages/MyCollection', $responseContent);
         self::assertStringContainsString('estimations', $responseContent);
         self::assertStringContainsString('1500', $responseContent);
     }

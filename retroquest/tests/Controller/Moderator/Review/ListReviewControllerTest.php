@@ -101,6 +101,6 @@ class ListReviewControllerTest extends WebTestCase
         $this->client->request('GET', '/moderator/review');
 
         self::assertResponseIsSuccessful();
-        self::assertSelectorExists('[data-symfony--ux-vue--vue-component-value="ModeratorReviews"]');
+        self::assertSelectorExists('[data-symfony--ux-vue--vue-component-value="pages/ModeratorReviews"]');
     }
 }

@@ -94,7 +94,7 @@ class SentExchangesControllerTest extends WebTestCase
 
         $html = $this->client->getResponse()->getContent();
         $crawler = new Crawler($html);
-        $div = $crawler->filter('[data-symfony--ux-vue--vue-component-value="SentExchanges"]');
+        $div = $crawler->filter('[data-symfony--ux-vue--vue-component-value="pages/SentExchanges"]');
         self::assertCount(1, $div);
 
         $props = json_decode($div->attr('data-symfony--ux-vue--vue-props-value'), true);
@@ -170,7 +170,7 @@ class SentExchangesControllerTest extends WebTestCase
 
         $html = $this->client->getResponse()->getContent();
         $crawler = new Crawler($html);
-        $div = $crawler->filter('[data-symfony--ux-vue--vue-component-value="SentExchanges"]');
+        $div = $crawler->filter('[data-symfony--ux-vue--vue-component-value="pages/SentExchanges"]');
         $props = json_decode($div->attr('data-symfony--ux-vue--vue-props-value'), true);
         $token = $props['exchanges'][0]['csrfTokenCancel'];
 

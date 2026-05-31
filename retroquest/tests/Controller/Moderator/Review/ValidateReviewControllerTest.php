@@ -91,7 +91,7 @@ class ValidateReviewControllerTest extends WebTestCase
         // Extract CSRF token from Vue component props
         $html = $this->client->getResponse()->getContent();
         $crawler = new Crawler($html);
-        $div = $crawler->filter('[data-symfony--ux-vue--vue-component-value="ModeratorReviews"]');
+        $div = $crawler->filter('[data-symfony--ux-vue--vue-component-value="pages/ModeratorReviews"]');
         $props = json_decode($div->attr('data-symfony--ux-vue--vue-props-value'), true);
         
         $token = null;

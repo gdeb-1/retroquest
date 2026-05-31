@@ -4,7 +4,7 @@
 
 {% block body %}
 <div class="container py-4">
-    <div {{ vue_component('MyCollection', {
+    <div {{ vue_component('pages/MyCollection', {
         items: collectionItemsData,
         estimations: estimations,
         csrfToken: csrf_token('delete_collection_item')

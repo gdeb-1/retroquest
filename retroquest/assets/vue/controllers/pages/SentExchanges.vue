@@ -200,7 +200,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 import Routing from 'fos-router';
-import ExchangeFilters from './ExchangeFilters.vue';
+import ExchangeFilters from '../components/ExchangeFilters.vue';
 
 const props = defineProps({
   exchanges: {

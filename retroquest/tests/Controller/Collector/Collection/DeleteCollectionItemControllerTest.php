@@ -161,7 +161,7 @@ class DeleteCollectionItemControllerTest extends WebTestCase
         $this->client->request('GET', '/collector/myCollection');
         $html = $this->client->getResponse()->getContent();
         $crawler = new Crawler($html);
-        $div = $crawler->filter('[data-symfony--ux-vue--vue-component-value="MyCollection"]');
+        $div = $crawler->filter('[data-symfony--ux-vue--vue-component-value="pages/MyCollection"]');
         $props = json_decode($div->attr('data-symfony--ux-vue--vue-props-value'), true);
         $token = $props['csrfToken'];
 
