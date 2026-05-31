@@ -5,21 +5,12 @@ namespace App\Tests\Controller\Collector\Game;
 use App\Entity\Game;
 use App\Entity\Review;
 use App\Entity\User;
-use Symfony\Bundle\FrameworkBundle\KernelBrowser;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DomCrawler\Crawler;
+use App\Tests\DatabaseWebTestCase;
 
-class ShowGameControllerTest extends WebTestCase
+class ShowGameControllerTest extends DatabaseWebTestCase
 {
-    private KernelBrowser $client;
-    private $entityManager;
 
-    protected function setUp(): void
-    {
-        $this->client = static::createClient();
-        $container = static::getContainer();
-        $this->entityManager = $container->get('doctrine.orm.entity_manager');
-    }
 
     public function testShowGameSuccess(): void
     {

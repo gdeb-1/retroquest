@@ -5,22 +5,17 @@ namespace App\Tests\Controller\Moderator\Review;
 use App\Entity\Game;
 use App\Entity\Review;
 use App\Entity\User;
-use Symfony\Bundle\FrameworkBundle\KernelBrowser;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DomCrawler\Crawler;
+use App\Tests\DatabaseWebTestCase;
 
-class ValidateReviewControllerTest extends WebTestCase
+class ValidateReviewControllerTest extends DatabaseWebTestCase
 {
-    private KernelBrowser $client;
-    private $entityManager;
     private User $moderator;
     private User $collector;
 
     protected function setUp(): void
     {
-        $this->client = static::createClient();
-        $container = static::getContainer();
-        $this->entityManager = $container->get('doctrine.orm.entity_manager');
+        parent::setUp();
 
         $this->moderator = $this->createModeratorUser();
         $this->collector = $this->createCollectorUser();

@@ -5,21 +5,16 @@ namespace App\Tests\Controller\Moderator\Review;
 use App\Entity\Game;
 use App\Entity\Review;
 use App\Entity\User;
-use Symfony\Bundle\FrameworkBundle\KernelBrowser;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use App\Tests\DatabaseWebTestCase;
 
-class ListReviewControllerTest extends WebTestCase
+class ListReviewControllerTest extends DatabaseWebTestCase
 {
-    private KernelBrowser $client;
-    private $entityManager;
     private User $moderator;
     private User $collector;
 
     protected function setUp(): void
     {
-        $this->client = static::createClient();
-        $container = static::getContainer();
-        $this->entityManager = $container->get('doctrine.orm.entity_manager');
+        parent::setUp();
 
         $this->moderator = $this->createModeratorUser();
         $this->collector = $this->createCollectorUser();

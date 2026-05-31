@@ -6,19 +6,11 @@ use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use App\Tests\DatabaseWebTestCase;
 
-class RouteSecurityTest extends WebTestCase
+class RouteSecurityTest extends DatabaseWebTestCase
 {
-    private KernelBrowser $client;
-    private EntityManagerInterface $entityManager;
 
-    protected function setUp(): void
-    {
-        $this->client = static::createClient();
-        $container = static::getContainer();
-        $this->entityManager = $container->get('doctrine.orm.entity_manager');
-    }
 
     private function createUserWithRoles(string $email, array $roles): User
     {

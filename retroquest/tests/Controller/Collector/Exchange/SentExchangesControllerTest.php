@@ -9,23 +9,14 @@ use App\Entity\User;
 use App\Enum\CollectionItemStates;
 use App\Enum\Currency;
 use App\Enum\ExchangeStatuses;
-use Symfony\Bundle\FrameworkBundle\KernelBrowser;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\RequestStack;
+use App\Tests\DatabaseWebTestCase;
 
-class SentExchangesControllerTest extends WebTestCase
+class SentExchangesControllerTest extends DatabaseWebTestCase
 {
-    private KernelBrowser $client;
-    private $entityManager;
 
-    protected function setUp(): void
-    {
-        $this->client = static::createClient();
-        $container = static::getContainer();
-        $this->entityManager = $container->get('doctrine.orm.entity_manager');
-    }
 
     public function testListSentExchangesRequiresAuthentication(): void
     {

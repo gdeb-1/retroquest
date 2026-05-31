@@ -4,13 +4,13 @@ namespace App\Tests\Controller\Registration;
 
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use App\Tests\DatabaseWebTestCase;
 
-class RegistrationControllerTest extends WebTestCase
+class RegistrationControllerTest extends DatabaseWebTestCase
 {
     public function testRegisterAssignsCollectorRole(): void
     {
-        $client = static::createClient();
+        $client = $this->client;
         $crawler = $client->request('GET', '/register');
         self::assertResponseIsSuccessful();
 
