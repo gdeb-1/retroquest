@@ -13,6 +13,7 @@ use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 class SentExchangesControllerTest extends WebTestCase
 {
@@ -245,8 +246,15 @@ class SentExchangesControllerTest extends WebTestCase
         // Login as the receiver of the exchange, not the proposer
         $this->client->loginUser($otherUser);
 
+        // Initialize session
+        $this->client->request('GET', '/collector/exchange/sent');
+        $request = $this->client->getRequest();
+        static::getContainer()->get(RequestStack::class)->push($request);
+
         // Generate token for otherUser (using container csrf token manager)
         $token = static::getContainer()->get('security.csrf.token_manager')->getToken('cancel_exchange_' . $exchange->getId())->getValue();
+        $request->getSession()->save();
+        static::getContainer()->get(RequestStack::class)->pop();
 
         // Perform cancellation request - should deny access
         $this->client->request('POST', '/collector/exchange/cancel/' . $exchange->getId(), [
@@ -317,7 +325,12 @@ class SentExchangesControllerTest extends WebTestCase
         $this->entityManager->flush();
 
         $this->client->loginUser($currentUser);
+        $this->client->request('GET', '/collector/exchange/sent');
+        $request = $this->client->getRequest();
+        static::getContainer()->get(RequestStack::class)->push($request);
         $token = static::getContainer()->get('security.csrf.token_manager')->getToken('cancel_exchange_' . $exchange->getId())->getValue();
+        $request->getSession()->save();
+        static::getContainer()->get(RequestStack::class)->pop();
 
         // Perform cancellation request
         $this->client->request('POST', '/collector/exchange/cancel/' . $exchange->getId(), [

@@ -13,6 +13,7 @@ use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 class ReceivedExchangesControllerTest extends WebTestCase
 {
@@ -244,8 +245,15 @@ class ReceivedExchangesControllerTest extends WebTestCase
         // Login as the proposer of the exchange (otherUser), not the receiver (currentUser)
         $this->client->loginUser($otherUser);
 
+        // Initialize session
+        $this->client->request('GET', '/collector/exchange/received');
+        $request = $this->client->getRequest();
+        static::getContainer()->get(RequestStack::class)->push($request);
+
         // Generate token for otherUser
         $token = static::getContainer()->get('security.csrf.token_manager')->getToken('reject_exchange_' . $exchange->getId())->getValue();
+        $request->getSession()->save();
+        static::getContainer()->get(RequestStack::class)->pop();
 
         // Perform rejection request - should deny access
         $this->client->request('POST', '/collector/exchange/reject/' . $exchange->getId(), [
@@ -316,7 +324,12 @@ class ReceivedExchangesControllerTest extends WebTestCase
         $this->entityManager->flush();
 
         $this->client->loginUser($currentUser);
+        $this->client->request('GET', '/collector/exchange/received');
+        $request = $this->client->getRequest();
+        static::getContainer()->get(RequestStack::class)->push($request);
         $token = static::getContainer()->get('security.csrf.token_manager')->getToken('reject_exchange_' . $exchange->getId())->getValue();
+        $request->getSession()->save();
+        static::getContainer()->get(RequestStack::class)->pop();
 
         // Perform rejection request
         $this->client->request('POST', '/collector/exchange/reject/' . $exchange->getId(), [
