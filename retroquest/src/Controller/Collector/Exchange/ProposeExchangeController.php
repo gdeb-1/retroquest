@@ -7,6 +7,7 @@ use App\Entity\Exchange;
 use App\Enum\ExchangeStatuses;
 use App\Form\ExchangeType;
 use App\Repository\CollectionItemRepository;
+use App\Repository\ExchangeRepository;
 use App\Service\ExchangeService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -24,7 +25,8 @@ class ProposeExchangeController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager,
         ExchangeService $exchangeService,
-        CollectionItemRepository $collectionItemRepository
+        CollectionItemRepository $collectionItemRepository,
+        ExchangeRepository $exchangeRepository
     ): Response {
         /** @var \App\Entity\User $currentUser */
         $currentUser = $this->getUser();
@@ -35,6 +37,12 @@ class ProposeExchangeController extends AbstractController
         }
 
         $availableItems = $collectionItemRepository->findAvailableForExchangeByCollector($currentUser);
+
+        $pendingExchanges = $exchangeRepository->findPendingExchangesForCollectionItemBetweenUsers(
+            $receiverItem,
+            $currentUser,
+            $receiverItem->getCollector()
+        );
 
         $exchange = new Exchange();
         $exchange->setProposer($currentUser);
@@ -72,6 +80,7 @@ class ProposeExchangeController extends AbstractController
             'receiverItem' => $receiverItem,
             'form' => $form->createView(),
             'hasAvailableItems' => count($availableItems) > 0,
+            'pendingExchanges' => $pendingExchanges,
         ]);
     }
 }

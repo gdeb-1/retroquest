@@ -3,6 +3,9 @@
 namespace App\Repository;
 
 use App\Entity\Exchange;
+use App\Entity\CollectionItem;
+use App\Entity\User;
+use App\Enum\ExchangeStatuses;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -15,6 +18,28 @@ class ExchangeRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Exchange::class);
     }
+
+    /**
+     * @return Exchange[]
+     */
+    public function findPendingExchangesForCollectionItemBetweenUsers(CollectionItem $item, User $user1, User $user2): array
+    {
+        return $this->createQueryBuilder('e')
+            ->join('e.items', 'i')
+            ->andWhere('e.status = :status')
+            ->andWhere('i = :item')
+            ->andWhere(
+                '(e.proposer = :user1 AND e.receiver = :user2) OR (e.proposer = :user2 AND e.receiver = :user1)'
+            )
+            ->setParameter('status', ExchangeStatuses::PENDING)
+            ->setParameter('item', $item)
+            ->setParameter('user1', $user1)
+            ->setParameter('user2', $user2)
+            ->orderBy('e.propositionDate', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
 
     //    /**
     //     * @return Exchange[] Returns an array of Exchange objects

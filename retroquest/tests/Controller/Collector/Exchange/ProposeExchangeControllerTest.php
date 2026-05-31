@@ -210,4 +210,71 @@ class ProposeExchangeControllerTest extends WebTestCase
 
         $this->assertSelectorTextContains('.invalid-feedback', 'Vous devez proposer au moins un jeu de votre collection en échange.');
     }
+
+    public function testProposeExchangeDisplaysPendingExchanges(): void
+    {
+        $container = static::getContainer();
+        $passwordHasher = $container->get('security.user_password_hasher');
+
+        $currentUser = (new User())->setEmail('proposer_pending@example.com');
+        $currentUser->setPassword($passwordHasher->hashPassword($currentUser, 'password'));
+        $currentUser->setRoles(['ROLE_COLLECTOR']);
+
+        $otherUser = (new User())->setEmail('receiver_pending@example.com');
+        $otherUser->setPassword($passwordHasher->hashPassword($otherUser, 'password'));
+        $otherUser->setRoles(['ROLE_COLLECTOR']);
+
+        $this->entityManager->persist($currentUser);
+        $this->entityManager->persist($otherUser);
+        $this->entityManager->flush();
+
+        $game1 = (new Game())->setTitle('Zelda: Ocarina of Time')->setConsole('N64')->setReleaseYear(1998)->setIsHidden(false);
+        $game2 = (new Game())->setTitle('Super Mario 64')->setConsole('N64')->setReleaseYear(1996)->setIsHidden(false);
+
+        $this->entityManager->persist($game1);
+        $this->entityManager->persist($game2);
+
+        $myAvailableItem = (new CollectionItem())
+            ->setCollector($currentUser)
+            ->setGame($game1)
+            ->setState(CollectionItemStates::GOOD)
+            ->setAcquisitionPrice(4500)
+            ->setCurrency(Currency::EUR)
+            ->setAcquisitionDate(new \DateTime());
+
+        $receiverItem = (new CollectionItem())
+            ->setCollector($otherUser)
+            ->setGame($game2)
+            ->setState(CollectionItemStates::MINT)
+            ->setAcquisitionPrice(6000)
+            ->setCurrency(Currency::EUR)
+            ->setAcquisitionDate(new \DateTime());
+
+        $this->entityManager->persist($myAvailableItem);
+        $this->entityManager->persist($receiverItem);
+        $this->entityManager->flush();
+
+        // Create an existing pending exchange
+        $existingExchange = new Exchange();
+        $existingExchange->setProposer($currentUser);
+        $existingExchange->setReceiver($otherUser);
+        $existingExchange->setStatus(ExchangeStatuses::PENDING);
+        $existingExchange->setPropositionDate(new \DateTime('2026-05-30'));
+        $existingExchange->addItem($myAvailableItem);
+        $existingExchange->addItem($receiverItem);
+
+        $this->entityManager->persist($existingExchange);
+        $this->entityManager->flush();
+
+        $this->client->loginUser($currentUser);
+        $crawler = $this->client->request('GET', '/collector/exchange/propose/' . $receiverItem->getId());
+
+        $this->assertResponseIsSuccessful();
+        
+        // Verify that the pending exchange is displayed
+        $this->assertSelectorTextContains('h4', 'Proposition(s) en cours pour ce jeu');
+        $this->assertSelectorTextContains('.card-body', 'Vous avez proposé d\'offrir :');
+        $this->assertSelectorTextContains('.card-body', 'Zelda: Ocarina of Time (N64)');
+        $this->assertSelectorTextContains('.card-body', 'Proposition du 30/05/2026');
+    }
 }
