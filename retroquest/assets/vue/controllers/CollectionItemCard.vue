@@ -1,5 +1,5 @@
 <template>
-  <div class="card h-100 p-3 shadow-sm border border-light-subtle rounded-4 bg-white d-flex flex-column justify-content-between collection-item-card hover-shadow transition-all">
+  <div class="card h-100 w-100 p-3 shadow-sm border border-light-subtle rounded-4 bg-white d-flex flex-column justify-content-between collection-item-card hover-shadow transition-all">
     <div>
       <div class="d-flex justify-content-between align-items-center mb-2">
         <span class="badge bg-secondary-subtle text-secondary">{{ game.console }}</span>
