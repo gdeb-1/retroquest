@@ -7,6 +7,7 @@ use App\Entity\Exchange;
 use App\Entity\User;
 use App\Enum\ExchangeStatuses;
 use App\Service\ExchangeService;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class ExchangeServiceTest extends TestCase
@@ -19,240 +20,232 @@ class ExchangeServiceTest extends TestCase
         $this->exchangeService = new ExchangeService();
     }
 
-    public function testIsDirectExchangeEligibleSuccess(): void
+    #[DataProvider('exchangeEligibilityProvider')]
+    public function testIsDirectExchangeEligible(callable $setupCallback, bool $expectedResult): void
     {
-        $proposer = new User();
-        $proposer->setEmail('proposer@example.com');
-
-        $receiver = new User();
-        $receiver->setEmail('receiver@example.com');
-
-        $itemProposer = new CollectionItem();
-        $proposer->addCollectionItem($itemProposer);
-
-        $itemReceiver = new CollectionItem();
-        $receiver->addCollectionItem($itemReceiver);
-
-        $exchange = new Exchange();
-        $exchange->setProposer($proposer);
-        $exchange->setReceiver($receiver);
-        $exchange->addItem($itemProposer);
-        $exchange->addItem($itemReceiver);
-
-        $this->assertTrue($this->exchangeService->isDirectExchangeEligible($exchange));
+        $exchange = $setupCallback();
+        $this->assertSame($expectedResult, $this->exchangeService->isDirectExchangeEligible($exchange));
     }
 
-    public function testIsDirectExchangeEligibleSameProposerAndReceiver(): void
+    public static function exchangeEligibilityProvider(): array
     {
-        $user = new User();
-        $user->setEmail('user@example.com');
+        $createUser = function (string $email) {
+            $user = new User();
+            $user->setEmail($email);
+            return $user;
+        };
 
-        $item1 = new CollectionItem();
-        $user->addCollectionItem($item1);
+        $createItem = function (User $owner) {
+            $item = new CollectionItem();
+            $owner->addCollectionItem($item);
+            return $item;
+        };
 
-        $exchange = new Exchange();
-        $exchange->setProposer($user);
-        $exchange->setReceiver($user);
-        $exchange->addItem($item1);
+        $createExchange = function (?User $proposer, ?User $receiver) {
+            $exchange = new Exchange();
+            if ($proposer) {
+                $exchange->setProposer($proposer);
+            }
+            if ($receiver) {
+                $exchange->setReceiver($receiver);
+            }
+            return $exchange;
+        };
 
-        $this->assertFalse($this->exchangeService->isDirectExchangeEligible($exchange));
-    }
-
-    public function testIsDirectExchangeEligibleNullProposer(): void
-    {
-        $receiver = new User();
-        $receiver->setEmail('receiver@example.com');
-
-        $item = new CollectionItem();
-        $receiver->addCollectionItem($item);
-
-        $exchange = new Exchange();
-        $exchange->setReceiver($receiver);
-        $exchange->addItem($item);
-
-        $this->assertFalse($this->exchangeService->isDirectExchangeEligible($exchange));
-    }
-
-    public function testIsDirectExchangeEligibleNullReceiver(): void
-    {
-        $proposer = new User();
-        $proposer->setEmail('proposer@example.com');
-
-        $item = new CollectionItem();
-        $proposer->addCollectionItem($item);
-
-        $exchange = new Exchange();
-        $exchange->setProposer($proposer);
-        $exchange->addItem($item);
-
-        $this->assertFalse($this->exchangeService->isDirectExchangeEligible($exchange));
-    }
-
-    public function testIsDirectExchangeEligibleNoItems(): void
-    {
-        $proposer = new User();
-        $proposer->setEmail('proposer@example.com');
-
-        $receiver = new User();
-        $receiver->setEmail('receiver@example.com');
-
-        $exchange = new Exchange();
-        $exchange->setProposer($proposer);
-        $exchange->setReceiver($receiver);
-
-        $this->assertFalse($this->exchangeService->isDirectExchangeEligible($exchange));
-    }
-
-    public function testIsDirectExchangeEligibleNoProposerItems(): void
-    {
-        $proposer = new User();
-        $proposer->setEmail('proposer@example.com');
-
-        $receiver = new User();
-        $receiver->setEmail('receiver@example.com');
-
-        $itemReceiver = new CollectionItem();
-        $receiver->addCollectionItem($itemReceiver);
-
-        $exchange = new Exchange();
-        $exchange->setProposer($proposer);
-        $exchange->setReceiver($receiver);
-        $exchange->addItem($itemReceiver);
-
-        $this->assertFalse($this->exchangeService->isDirectExchangeEligible($exchange));
-    }
-
-    public function testIsDirectExchangeEligibleNoReceiverItems(): void
-    {
-        $proposer = new User();
-        $proposer->setEmail('proposer@example.com');
-
-        $receiver = new User();
-        $receiver->setEmail('receiver@example.com');
-
-        $itemProposer = new CollectionItem();
-        $proposer->addCollectionItem($itemProposer);
-
-        $exchange = new Exchange();
-        $exchange->setProposer($proposer);
-        $exchange->setReceiver($receiver);
-        $exchange->addItem($itemProposer);
-
-        $this->assertFalse($this->exchangeService->isDirectExchangeEligible($exchange));
-    }
-
-    public function testIsDirectExchangeEligibleThirdPartyItem(): void
-    {
-        $proposer = new User();
-        $proposer->setEmail('proposer@example.com');
-
-        $receiver = new User();
-        $receiver->setEmail('receiver@example.com');
-
-        $thirdParty = new User();
-        $thirdParty->setEmail('thirdparty@example.com');
-
-        $itemProposer = new CollectionItem();
-        $proposer->addCollectionItem($itemProposer);
-
-        $itemThirdParty = new CollectionItem();
-        $thirdParty->addCollectionItem($itemThirdParty);
-
-        $exchange = new Exchange();
-        $exchange->setProposer($proposer);
-        $exchange->setReceiver($receiver);
-        $exchange->addItem($itemProposer);
-        $exchange->addItem($itemThirdParty);
-
-        $this->assertTrue($this->exchangeService->isDirectExchangeEligible($exchange));
-    }
-    
-    public function testIsDirectExchangeEligibleItemInAnotherPendingExchange(): void
-    {
-        $proposer = new User();
-        $proposer->setEmail('proposer@example.com');
-
-        $receiver = new User();
-        $receiver->setEmail('receiver@example.com');
-
-        $itemProposer = new CollectionItem();
-        $proposer->addCollectionItem($itemProposer);
-
-        $itemReceiver = new CollectionItem();
-        $receiver->addCollectionItem($itemReceiver);
-
-        $exchange = new Exchange();
-        $exchange->setProposer($proposer);
-        $exchange->setReceiver($receiver);
-        $exchange->addItem($itemProposer);
-        $exchange->addItem($itemReceiver);
-
-        $otherExchange = new Exchange();
-        $otherExchange->setStatus(ExchangeStatuses::PENDING);
-        $otherExchange->addItem($itemProposer);
-        $itemProposer->addExchange($otherExchange);
-
-        $this->assertFalse($this->exchangeService->isDirectExchangeEligible($exchange));
-    }
-
-    public function testIsDirectExchangeEligibleItemInAnotherAcceptedExchange(): void
-    {
-        $proposer = new User();
-        $proposer->setEmail('proposer@example.com');
-
-        $receiver = new User();
-        $receiver->setEmail('receiver@example.com');
-
-        $itemProposer = new CollectionItem();
-        $proposer->addCollectionItem($itemProposer);
-
-        $itemReceiver = new CollectionItem();
-        $receiver->addCollectionItem($itemReceiver);
-
-        $exchange = new Exchange();
-        $exchange->setProposer($proposer);
-        $exchange->setReceiver($receiver);
-        $exchange->addItem($itemProposer);
-        $exchange->addItem($itemReceiver);
-
-        $otherExchange = new Exchange();
-        $otherExchange->setStatus(ExchangeStatuses::ACCEPTED);
-        $otherExchange->addItem($itemReceiver);
-        $itemReceiver->addExchange($otherExchange);
-
-        $this->assertTrue($this->exchangeService->isDirectExchangeEligible($exchange));
-    }
-
-    public function testIsDirectExchangeEligibleItemInAnotherRejectedOrCancelledExchange(): void
-    {
-        $proposer = new User();
-        $proposer->setEmail('proposer@example.com');
-
-        $receiver = new User();
-        $receiver->setEmail('receiver@example.com');
-
-        $itemProposer = new CollectionItem();
-        $proposer->addCollectionItem($itemProposer);
-
-        $itemReceiver = new CollectionItem();
-        $receiver->addCollectionItem($itemReceiver);
-
-        $exchange = new Exchange();
-        $exchange->setProposer($proposer);
-        $exchange->setReceiver($receiver);
-        $exchange->addItem($itemProposer);
-        $exchange->addItem($itemReceiver);
-
-        $rejectedExchange = new Exchange();
-        $rejectedExchange->setStatus(ExchangeStatuses::REJECTED);
-        $rejectedExchange->addItem($itemProposer);
-        $itemProposer->addExchange($rejectedExchange);
-
-        $cancelledExchange = new Exchange();
-        $cancelledExchange->setStatus(ExchangeStatuses::CANCELLED);
-        $cancelledExchange->addItem($itemReceiver);
-        $itemReceiver->addExchange($cancelledExchange);
-
-        $this->assertTrue($this->exchangeService->isDirectExchangeEligible($exchange));
+        return [
+            'success_nominal' => [
+                function () use ($createUser, $createItem, $createExchange) {
+                    $proposer = $createUser('proposer@example.com');
+                    $receiver = $createUser('receiver@example.com');
+                    $exchange = $createExchange($proposer, $receiver);
+                    $exchange->addItem($createItem($proposer));
+                    $exchange->addItem($createItem($receiver));
+                    return $exchange;
+                },
+                true
+            ],
+            'error_same_proposer_and_receiver' => [
+                function () use ($createUser, $createItem, $createExchange) {
+                    $user = $createUser('user@example.com');
+                    $exchange = $createExchange($user, $user);
+                    $exchange->addItem($createItem($user));
+                    return $exchange;
+                },
+                false
+            ],
+            'error_null_proposer' => [
+                function () use ($createUser, $createItem, $createExchange) {
+                    $receiver = $createUser('receiver@example.com');
+                    $exchange = $createExchange(null, $receiver);
+                    $exchange->addItem($createItem($receiver));
+                    return $exchange;
+                },
+                false
+            ],
+            'error_null_receiver' => [
+                function () use ($createUser, $createItem, $createExchange) {
+                    $proposer = $createUser('proposer@example.com');
+                    $exchange = $createExchange($proposer, null);
+                    $exchange->addItem($createItem($proposer));
+                    return $exchange;
+                },
+                false
+            ],
+            'error_no_items' => [
+                function () use ($createUser, $createExchange) {
+                    $proposer = $createUser('proposer@example.com');
+                    $receiver = $createUser('receiver@example.com');
+                    return $createExchange($proposer, $receiver);
+                },
+                false
+            ],
+            'error_no_proposer_items' => [
+                function () use ($createUser, $createItem, $createExchange) {
+                    $proposer = $createUser('proposer@example.com');
+                    $receiver = $createUser('receiver@example.com');
+                    $exchange = $createExchange($proposer, $receiver);
+                    $exchange->addItem($createItem($receiver));
+                    return $exchange;
+                },
+                false
+            ],
+            'error_no_receiver_items' => [
+                function () use ($createUser, $createItem, $createExchange) {
+                    $proposer = $createUser('proposer@example.com');
+                    $receiver = $createUser('receiver@example.com');
+                    $exchange = $createExchange($proposer, $receiver);
+                    $exchange->addItem($createItem($proposer));
+                    return $exchange;
+                },
+                false
+            ],
+            'error_third_party_item' => [
+                function () use ($createUser, $createItem, $createExchange) {
+                    $proposer = $createUser('proposer@example.com');
+                    $receiver = $createUser('receiver@example.com');
+                    $thirdParty = $createUser('thirdparty@example.com');
+                    
+                    $exchange = $createExchange($proposer, $receiver);
+                    $exchange->addItem($createItem($proposer));
+                    $exchange->addItem($createItem($thirdParty));
+                    return $exchange;
+                },
+                false
+            ],
+            'success_item_in_another_pending_exchange_but_different_items_count' => [
+                function () use ($createUser, $createItem, $createExchange) {
+                    $proposer = $createUser('proposer@example.com');
+                    $receiver = $createUser('receiver@example.com');
+                    
+                    $exchange = $createExchange($proposer, $receiver);
+                    $itemP = $createItem($proposer);
+                    $itemR = $createItem($receiver);
+                    $exchange->addItem($itemP);
+                    $exchange->addItem($itemR);
+                    
+                    $otherExchange = new Exchange();
+                    $otherExchange->setStatus(ExchangeStatuses::PENDING);
+                    $otherExchange->addItem($itemP);
+                    $itemP->addExchange($otherExchange);
+                    
+                    return $exchange;
+                },
+                true
+            ],
+            'success_item_in_another_pending_exchange_same_items_count_but_different_items' => [
+                function () use ($createUser, $createItem, $createExchange) {
+                    $proposer = $createUser('proposer@example.com');
+                    $receiver = $createUser('receiver@example.com');
+                    
+                    $exchange = $createExchange($proposer, $receiver);
+                    $itemP = $createItem($proposer);
+                    $itemR = $createItem($receiver);
+                    $exchange->addItem($itemP);
+                    $exchange->addItem($itemR);
+                    
+                    $anotherItemP = $createItem($proposer);
+                    
+                    $otherExchange = new Exchange();
+                    $otherExchange->setStatus(ExchangeStatuses::PENDING);
+                    $otherExchange->addItem($anotherItemP);
+                    $otherExchange->addItem($itemR);
+                    
+                    $itemR->addExchange($otherExchange);
+                    $anotherItemP->addExchange($otherExchange);
+                    
+                    return $exchange;
+                },
+                true
+            ],
+            'error_duplicate_pending_exchange' => [
+                function () use ($createUser, $createItem, $createExchange) {
+                    $proposer = $createUser('proposer@example.com');
+                    $receiver = $createUser('receiver@example.com');
+                    
+                    $exchange = $createExchange($proposer, $receiver);
+                    $itemP = $createItem($proposer);
+                    $itemR = $createItem($receiver);
+                    $exchange->addItem($itemP);
+                    $exchange->addItem($itemR);
+                    
+                    $otherExchange = new Exchange();
+                    $otherExchange->setStatus(ExchangeStatuses::PENDING);
+                    $otherExchange->addItem($itemP);
+                    $otherExchange->addItem($itemR);
+                    $itemP->addExchange($otherExchange);
+                    $itemR->addExchange($otherExchange);
+                    
+                    return $exchange;
+                },
+                false
+            ],
+            'success_item_in_another_accepted_exchange' => [
+                function () use ($createUser, $createItem, $createExchange) {
+                    $proposer = $createUser('proposer@example.com');
+                    $receiver = $createUser('receiver@example.com');
+                    
+                    $exchange = $createExchange($proposer, $receiver);
+                    $itemP = $createItem($proposer);
+                    $itemR = $createItem($receiver);
+                    $exchange->addItem($itemP);
+                    $exchange->addItem($itemR);
+                    
+                    $otherExchange = new Exchange();
+                    $otherExchange->setStatus(ExchangeStatuses::ACCEPTED);
+                    $otherExchange->addItem($itemP);
+                    $otherExchange->addItem($itemR);
+                    $itemP->addExchange($otherExchange);
+                    $itemR->addExchange($otherExchange);
+                    
+                    return $exchange;
+                },
+                true
+            ],
+            'success_item_in_another_rejected_or_cancelled_exchange' => [
+                function () use ($createUser, $createItem, $createExchange) {
+                    $proposer = $createUser('proposer@example.com');
+                    $receiver = $createUser('receiver@example.com');
+                    
+                    $exchange = $createExchange($proposer, $receiver);
+                    $itemP = $createItem($proposer);
+                    $itemR = $createItem($receiver);
+                    $exchange->addItem($itemP);
+                    $exchange->addItem($itemR);
+                    
+                    $rejectedExchange = new Exchange();
+                    $rejectedExchange->setStatus(ExchangeStatuses::REJECTED);
+                    $rejectedExchange->addItem($itemP);
+                    $itemP->addExchange($rejectedExchange);
+                    
+                    $cancelledExchange = new Exchange();
+                    $cancelledExchange->setStatus(ExchangeStatuses::CANCELLED);
+                    $cancelledExchange->addItem($itemR);
+                    $itemR->addExchange($cancelledExchange);
+                    
+                    return $exchange;
+                },
+                true
+            ],
+        ];
     }
 }

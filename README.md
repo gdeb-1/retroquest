@@ -77,6 +77,10 @@ La clef API RAWG est dans le .env (volontairement push sur github)
 47. refactorisation des tests.
 48. implémentation formulaire d'échange et correction logique echanges
 49. correction logique métier d'échange
+50. implémentation mes echanges envoyer
+51. implémentation mes echanges reçu
+52. vérification et correction test echanges
+53. 
 
 
 ## clef api rawg.io: 
