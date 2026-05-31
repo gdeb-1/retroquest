@@ -1,20 +1,6 @@
 <template>
   <div class="sent-exchanges-container">
-    <div class="d-flex flex-wrap gap-2 mb-4 bg-white p-2 rounded-4 shadow-sm border border-light-subtle">
-      <button 
-        v-for="filter in filters" 
-        :key="filter.value"
-        type="button"
-        class="btn btn-sm rounded-3 px-3 py-2 fw-semibold transition-all d-flex align-items-center gap-2"
-        :class="activeFilter === filter.value ? 'btn-primary shadow-sm' : 'btn-light border-0 text-secondary hover-bg-light'"
-        @click="activeFilter = filter.value"
-      >
-        <span>{{ filter.label }}</span>
-        <span class="badge" :class="activeFilter === filter.value ? 'bg-white text-primary' : 'bg-secondary-subtle text-secondary'">
-          {{ getCountForFilter(filter.value) }}
-        </span>
-      </button>
-    </div>
+    <ExchangeFilters v-model="activeFilter" :exchanges="exchanges" />
 
     <!-- Exchanges list -->
     <div v-if="filteredExchanges.length > 0" class="d-flex flex-column gap-4">
@@ -214,6 +200,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 import Routing from 'fos-router';
+import ExchangeFilters from './ExchangeFilters.vue';
 
 const props = defineProps({
   exchanges: {
@@ -225,20 +212,6 @@ const props = defineProps({
 const activeFilter = ref('all');
 const exchangeToCancel = ref(null);
 
-const filters = [
-  { label: 'Tous', value: 'all' },
-  { label: 'En attente', value: 'pending' },
-  { label: 'Acceptés', value: 'accepted' },
-  { label: 'Refusés', value: 'rejected' },
-  { label: 'Annulés', value: 'cancelled' }
-];
-
-const getCountForFilter = (filterVal) => {
-  if (filterVal === 'all') {
-    return props.exchanges.length;
-  }
-  return props.exchanges.filter(e => e.status === filterVal).length;
-};
 
 const filteredExchanges = computed(() => {
   if (activeFilter.value === 'all') {
