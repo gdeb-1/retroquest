@@ -7,6 +7,7 @@ use App\Repository\ExchangeRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[IsGranted('ROLE_COLLECTOR')]
@@ -14,7 +15,8 @@ class SentExchangesController extends AbstractController
 {
     #[Route('/collector/exchange/sent', name: 'app_collector_exchange_sent', options: ['expose' => true])]
     public function listSent(
-        ExchangeRepository $exchangeRepository
+        ExchangeRepository $exchangeRepository,
+        CsrfTokenManagerInterface $csrfTokenManager
     ): Response {
         /** @var User $currentUser */
         $currentUser = $this->getUser();
@@ -56,7 +58,8 @@ class SentExchangesController extends AbstractController
                     'email' => $receiver->getEmail(),
                 ],
                 'requestedItems' => $requestedItems,
-                'offeredItems' => $offeredItems
+                'offeredItems' => $offeredItems,
+                'csrfTokenCancel' => $csrfTokenManager->getToken('cancel_exchange_' . $exchange->getId())->getValue(),
             ];
         }
 

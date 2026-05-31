@@ -114,6 +114,21 @@
 
           </div>
         </div>
+
+        <!-- Card Footer -->
+        <div 
+          v-if="exchange.status === 'pending'" 
+          class="card-footer bg-white border-top border-light-subtle py-3 px-4 d-flex justify-content-end"
+        >
+          <button 
+            type="button" 
+            class="btn btn-outline-danger btn-sm rounded-3 px-3 py-2 fw-semibold d-flex align-items-center gap-2 hover-lift"
+            @click="triggerCancel(exchange)"
+          >
+            <i class="bi bi-x-circle"></i>
+            <span>Annuler ma proposition</span>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -133,6 +148,66 @@
         Rechercher un échange
       </a>
     </div>
+
+    <!-- Teleport Modal for Cancellation Confirmation -->
+    <Teleport to="body">
+      <div 
+        v-if="exchangeToCancel" 
+        class="modal fade show" 
+        style="display: block; background-color: rgba(0, 0, 0, 0.5);" 
+        tabindex="-1" 
+        role="dialog"
+      >
+        <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content shadow-lg border-0 rounded-4">
+            <div class="modal-header border-bottom-0 pb-0">
+              <h5 class="modal-title fw-bold text-dark">Annuler la proposition</h5>
+              <button 
+                type="button" 
+                class="btn-close" 
+                @click="exchangeToCancel = null" 
+                aria-label="Close"
+              ></button>
+            </div>
+            <div class="modal-body py-3">
+              <p class="text-secondary small lh-base">
+                Êtes-vous sûr de vouloir annuler cette proposition d'échange avec <strong>{{ exchangeToCancel.receiver.email }}</strong> ?
+              </p>
+              
+              <div class="p-3 bg-light rounded-3 text-secondary small border-start border-primary border-3 mb-3">
+                <div class="fw-bold text-dark-emphasis mb-1">Résumé de l'échange :</div>
+                <div class="mb-1">
+                  <strong>Demande :</strong> {{ exchangeToCancel.requestedItems.map(i => i.game.title).join(', ') }}
+                </div>
+                <div>
+                  <strong>Contrepartie :</strong> {{ exchangeToCancel.offeredItems.map(i => i.game.title).join(', ') }}
+                </div>
+              </div>
+
+              <p class="text-danger small mt-2 mb-0 fw-semibold">
+                Cette action est définitive et l'échange sera marqué comme annulé.
+              </p>
+            </div>
+            <div class="modal-footer border-top-0 pt-0">
+              <button 
+                type="button" 
+                class="btn btn-secondary rounded-3 px-3 py-2 fw-medium" 
+                @click="exchangeToCancel = null"
+              >
+                Conserver la demande
+              </button>
+              <button 
+                type="button" 
+                class="btn btn-danger rounded-3 px-3 py-2 fw-medium shadow-sm" 
+                @click="confirmCancel"
+              >
+                Confirmer l'annulation
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -148,6 +223,7 @@ const props = defineProps({
 });
 
 const activeFilter = ref('all');
+const exchangeToCancel = ref(null);
 
 const filters = [
   { label: 'Tous', value: 'all' },
@@ -216,6 +292,27 @@ const formatCurrency = (currencyCode) => {
 
 const path = (name, params = {}) => {
   return Routing.generate(name, params);
+};
+
+const triggerCancel = (exchange) => {
+  exchangeToCancel.value = exchange;
+};
+
+const confirmCancel = () => {
+  if (!exchangeToCancel.value) return;
+
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = path('app_collector_exchange_cancel', { id: exchangeToCancel.value.id });
+
+  const csrfInput = document.createElement('input');
+  csrfInput.type = 'hidden';
+  csrfInput.name = '_token';
+  csrfInput.value = exchangeToCancel.value.csrfTokenCancel;
+  form.appendChild(csrfInput);
+
+  document.body.appendChild(form);
+  form.submit();
 };
 </script>
 
