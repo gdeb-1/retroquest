@@ -112,5 +112,27 @@ class CollectionItemRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Récupère tous les CollectionItems associés à une liste de jeux.
+     * Ces éléments serviront au service pour calculer les prix moyens par état.
+     *
+     * @param Game[] $games
+     * @return CollectionItem[]
+     */
+    public function findForGames(array $games): array
+    {
+        if (empty($games)) {
+            return [];
+        }
+
+        return $this->createQueryBuilder('c')
+            ->select('c', 'g')
+            ->join('c.game', 'g')
+            ->andWhere('c.game IN (:games)')
+            ->setParameter('games', $games)
+            ->getQuery()
+            ->getResult();
+    }
 }
 
