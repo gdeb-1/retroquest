@@ -6,6 +6,8 @@ use App\Entity\CollectionItem;
 use App\Entity\Exchange;
 use App\Entity\User;
 use App\Enum\ExchangeStatuses;
+use App\Exception\InvalidStateExchangeException;
+use App\Exception\NotEligibleExchangeException;
 use App\Service\ExchangeService;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -360,7 +362,7 @@ class ExchangeServiceTest extends TestCase
         $receiver->addCollectionItem($itemR);
         $exchange->addItem($itemR);
 
-        $this->expectException(\LogicException::class);
+        $this->expectException(InvalidStateExchangeException::class);
         $this->expectExceptionMessage("Seuls les échanges en attente peuvent être validés.");
 
         $this->exchangeService->validateExchange($exchange);
@@ -379,7 +381,7 @@ class ExchangeServiceTest extends TestCase
         $exchange->setReceiver($receiver);
 
         // Missing items completely, so isDirectExchangeEligible() will return false
-        $this->expectException(\LogicException::class);
+        $this->expectException(NotEligibleExchangeException::class);
         $this->expectExceptionMessage("Cet échange n'est pas éligible et ne peut pas être validé.");
 
         $this->exchangeService->validateExchange($exchange);

@@ -5,6 +5,8 @@ namespace App\Service;
 use App\Entity\Exchange;
 use App\Entity\User;
 use App\Enum\ExchangeStatuses;
+use App\Exception\InvalidStateExchangeException;
+use App\Exception\NotEligibleExchangeException;
 
 class ExchangeService
 {
@@ -85,16 +87,17 @@ class ExchangeService
      * entre le proposant et le destinataire, et annule automatiquement les autres échanges
      * en attente qui impliquent ces mêmes objets.
      *
-     * @throws \LogicException Si l'échange n'est pas en attente ou s'il n'est pas éligible.
+     * @throws InvalidStateExchangeException Si l'échange n'est pas en attente.
+     * @throws NotEligibleExchangeException Si l'échange n'est pas éligible.
      */
     public function validateExchange(Exchange $exchange): void
     {
         if ($exchange->getStatus() !== ExchangeStatuses::PENDING) {
-            throw new \LogicException("Seuls les échanges en attente peuvent être validés.");
+            throw new InvalidStateExchangeException("Seuls les échanges en attente peuvent être validés.");
         }
 
         if (!$this->isDirectExchangeEligible($exchange)) {
-            throw new \LogicException("Cet échange n'est pas éligible et ne peut pas être validé.");
+            throw new NotEligibleExchangeException("Cet échange n'est pas éligible et ne peut pas être validé.");
         }
 
         $proposer = $exchange->getProposer();

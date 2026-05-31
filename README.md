@@ -80,7 +80,8 @@ La clef API RAWG est dans le .env (volontairement push sur github)
 50. implémentation mes echanges envoyer
 51. implémentation mes echanges reçu
 52. vérification et correction test echanges
-53. 
+53. implémentation validation d'un echange dans le service
+54. 
 
 
 ## clef api rawg.io: 
