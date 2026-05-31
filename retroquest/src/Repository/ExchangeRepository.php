@@ -56,6 +56,23 @@ class ExchangeRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * @return Exchange[]
+     */
+    public function findReceivedExchanges(User $receiver): array
+    {
+        return $this->createQueryBuilder('e')
+            ->leftJoin('e.items', 'i')
+            ->leftJoin('i.game', 'g')
+            ->leftJoin('i.collector', 'c')
+            ->andWhere('e.receiver = :receiver')
+            ->setParameter('receiver', $receiver)
+            ->orderBy('e.propositionDate', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+
 
 
     //    /**

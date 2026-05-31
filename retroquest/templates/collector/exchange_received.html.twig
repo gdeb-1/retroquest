@@ -1,0 +1,16 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes demandes reçues - Retroquest{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+    <div class="mb-4 text-center text-md-start">
+        <h1 class="display-6 fw-bold text-dark mb-1">Mes Demandes Reçues</h1>
+        <p class="lead text-secondary fs-6">Gérez les propositions d'échange reçues de la part d'autres collectionneurs</p>
+    </div>
+
+    <div {{ vue_component('ReceivedExchanges', {
+        exchanges: exchangesData
+    }) }}></div>
+</div>
+{% endblock %}
