@@ -79,13 +79,8 @@ class CollectionItemRepository extends ServiceEntityRepository
             ->select('c', 'g', 'col')
             ->join('c.game', 'g')
             ->join('c.collector', 'col')
-            ->leftJoin('c.exchanges', 'e', 'WITH', 'e.status IN (:activeStatuses)')
             ->andWhere('c.collector != :currentUser')
             ->andWhere('g.isHidden = false')
-            ->andWhere('e.id IS NULL')
-            ->setParameter('activeStatuses', [
-                ExchangeStatuses::PENDING
-            ])
             ->setParameter('currentUser', $currentUser)
             ->getQuery()
             ->getResult();
@@ -96,16 +91,31 @@ class CollectionItemRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('c')
             ->select('COUNT(c.id)')
             ->join('c.game', 'g')
-            ->join('c.collector', 'col')
-            ->leftJoin('c.exchanges', 'e', 'WITH', 'e.status IN (:activeStatuses)')
-            ->andWhere('c.collector != :currentUser')
+            ->join('c.collector', 'col')            ->andWhere('c.collector != :currentUser')
+            ->andWhere('g.isHidden = false')
+            ->setParameter('currentUser', $currentUser)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * @return CollectionItem[]
+     */
+    public function findAvailableForExchangeByCollector(User $collector): array
+    {
+        return $this->createQueryBuilder('ci')
+            ->select('ci', 'g')
+            ->join('ci.game', 'g')
+            ->leftJoin('ci.exchanges', 'e', 'WITH', 'e.status IN (:activeStatuses)')
+            ->andWhere('ci.collector = :collector')
             ->andWhere('g.isHidden = false')
             ->andWhere('e.id IS NULL')
             ->setParameter('activeStatuses', [
                 ExchangeStatuses::PENDING
             ])
-            ->setParameter('currentUser', $currentUser)
+            ->setParameter('collector', $collector)
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getResult();
     }
 }
+

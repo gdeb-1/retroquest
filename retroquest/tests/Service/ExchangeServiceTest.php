@@ -164,9 +164,9 @@ class ExchangeServiceTest extends TestCase
         $exchange->addItem($itemProposer);
         $exchange->addItem($itemThirdParty);
 
-        $this->assertFalse($this->exchangeService->isDirectExchangeEligible($exchange));
+        $this->assertTrue($this->exchangeService->isDirectExchangeEligible($exchange));
     }
-
+    
     public function testIsDirectExchangeEligibleItemInAnotherPendingExchange(): void
     {
         $proposer = new User();

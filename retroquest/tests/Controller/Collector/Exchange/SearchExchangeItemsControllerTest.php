@@ -130,7 +130,7 @@ class SearchExchangeItemsControllerTest extends WebTestCase
         
         $itemsData = $props['items'];
         
-        self::assertCount(2 + $nbGamesTradableBeforeAdd, $itemsData);
+        self::assertCount(3 + $nbGamesTradableBeforeAdd, $itemsData);
 
         $availableItemData = null;
         $rejectedItemData = null;
