@@ -60,6 +60,7 @@ class ReceivedExchangesController extends AbstractController
                 'requestedItems' => $requestedItems,
                 'offeredItems' => $offeredItems,
                 'csrfTokenReject' => $csrfTokenManager->getToken('reject_exchange_' . $exchange->getId())->getValue(),
+                'csrfTokenValidate' => $csrfTokenManager->getToken('validate_exchange_' . $exchange->getId())->getValue(),
             ];
         }
 
