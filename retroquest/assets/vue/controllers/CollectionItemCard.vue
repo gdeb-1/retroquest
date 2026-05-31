@@ -21,13 +21,13 @@
     </div>
 
     <div class="d-flex gap-2 mt-3 pt-2 border-top border-light-subtle">
-      <button 
-        @click="$emit('exchange', id)"
+      <a 
+        :href="gameShowUrl"
         class="btn btn-outline-primary btn-sm flex-grow-1 d-flex align-items-center justify-content-center gap-1 py-2 fw-semibold rounded-3"
       >
-        <i class="bi bi-arrow-left-right"></i>
-        <span>Échanger</span>
-      </button>
+        <i class="bi bi-eye"></i>
+        <span>Voir fiche</span>
+      </a>
       <button 
         @click="$emit('delete', id)"
         class="btn btn-outline-danger btn-sm flex-grow-1 d-flex align-items-center justify-content-center gap-1 py-2 fw-semibold rounded-3"
@@ -40,7 +40,10 @@
 </template>
 
 <script setup>
-defineProps({
+import { computed } from 'vue';
+import Routing from 'fos-router';
+
+const props = defineProps({
   id: {
     type: Number,
     required: true
@@ -63,7 +66,11 @@ defineProps({
   }
 });
 
-defineEmits(['exchange', 'delete']);
+defineEmits(['delete']);
+
+const gameShowUrl = computed(() => {
+  return Routing.generate('app_collector_game_show', { id: props.game.id });
+});
 
 const formatPrice = (price) => {
   return (price / 100).toFixed(2);

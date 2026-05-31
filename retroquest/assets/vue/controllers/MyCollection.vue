@@ -21,7 +21,6 @@
       >
         <CollectionItemCard 
           v-bind="item"
-          @exchange="onExchange"
           @delete="onDelete"
         />
       </div>
@@ -105,12 +104,6 @@ const props = defineProps({
 
 const itemToDelete = ref(null);
 
-const onExchange = (id) => {
-  const item = props.items.find(i => i.id === id);
-  const title = item ? item.game.title : 'ce jeu';
-  console.log('Action Échanger déclenchée pour l\'item:', id);
-  alert(`Fonctionnalité d'échange à venir pour "${title}" !`);
-};
 
 const onDelete = (id) => {
   const item = props.items.find(i => i.id === id);
