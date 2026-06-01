@@ -10,6 +10,7 @@ La clef API RAWG est dans le .env (volontairement push sur github)
 ## Si make n'est pas disponible : 
 ### Installation : 
 - docker compose up -d
+- docker compose exec php composer install
 - docker compose exec php php bin/console doctrine:database:create --if-not-exists
 - docker compose exec php php bin/console doctrine:migrations:migrate
 - docker compose exec php php bin/console doctrine:fixtures:load --append

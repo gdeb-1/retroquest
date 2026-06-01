@@ -25,6 +25,7 @@ sh: ## Access the PHP container shell
 	$(EXEC) sh
 
 init: ## Init the project
+	$(EXEC) composer install
 	$(MAKE) db-init
 	$(MAKE) init-assets
 
