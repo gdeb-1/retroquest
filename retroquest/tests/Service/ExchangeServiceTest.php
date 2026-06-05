@@ -19,7 +19,32 @@ class ExchangeServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->exchangeService = new ExchangeService();
+
+        $workflow = $this->createStub(\Symfony\Component\Workflow\WorkflowInterface::class);
+        
+        $workflow->method('can')->willReturnCallback(function (Exchange $exchange, string $transition) {
+            return $exchange->getStatus() === ExchangeStatuses::PENDING;
+        });
+
+        $workflow->method('apply')->willReturnCallback(function (Exchange $exchange, string $transition) {
+            if ($transition === 'validate') {
+                $this->exchangeService->processExchangeTransfer($exchange);
+                $exchange->setStatus(ExchangeStatuses::ACCEPTED);
+                
+                foreach ($exchange->getItems() as $item) {
+                    foreach ($item->getExchanges() as $otherExchange) {
+                        if ($otherExchange !== $exchange && $otherExchange->getStatus() === ExchangeStatuses::PENDING) {
+                            $otherExchange->setStatus(ExchangeStatuses::CANCELLED);
+                        }
+                    }
+                }
+            } elseif ($transition === 'cancel') {
+                $exchange->setStatus(ExchangeStatuses::CANCELLED);
+            }
+            return $this->createStub(\Symfony\Component\Workflow\Marking::class);
+        });
+
+        $this->exchangeService = new ExchangeService($workflow);
     }
 
     #[DataProvider('exchangeEligibilityProvider')]

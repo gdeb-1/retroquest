@@ -7,9 +7,17 @@ use App\Entity\User;
 use App\Enum\ExchangeStatuses;
 use App\Exception\InvalidStateExchangeException;
 use App\Exception\NotEligibleExchangeException;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\DependencyInjection\Attribute\Target;
+use Symfony\Component\Workflow\WorkflowInterface;
 
 class ExchangeService
 {
+    public function __construct(
+        #[Target('exchange_status')]
+        #[Autowire(lazy: true)]
+        private WorkflowInterface $exchangeWorkflow
+    ) {}
     /**
      * Vérifie si un échange direct entre deux membres est éligible en fonction des objets de leur collection.
      *
@@ -100,18 +108,18 @@ class ExchangeService
             throw new NotEligibleExchangeException("Cet échange n'est pas éligible et ne peut pas être validé.");
         }
 
+        $this->exchangeWorkflow->apply($exchange, 'validate');
+    }
+
+    /**
+     * Effectue le transfert de propriété des objets impliqués dans l'échange.
+     */
+    public function processExchangeTransfer(Exchange $exchange): void
+    {
         $proposer = $exchange->getProposer();
         $receiver = $exchange->getReceiver();
 
         foreach ($exchange->getItems() as $item) {
-            // Annule les autres échanges en attente qui contiennent cet objet
-            foreach ($item->getExchanges() as $otherExchange) {
-                if ($otherExchange !== $exchange && $otherExchange->getStatus() === ExchangeStatuses::PENDING) {
-                    $otherExchange->setStatus(ExchangeStatuses::CANCELLED);
-                }
-            }
-
-            // Transfert de propriété
             $currentCollector = $item->getCollector();
             if ($currentCollector === $proposer) {
                 $proposer->removeCollectionItem($item);
@@ -121,8 +129,6 @@ class ExchangeService
                 $proposer->addCollectionItem($item);
             }
         }
-
-        $exchange->setStatus(ExchangeStatuses::ACCEPTED);
     }
 }
 

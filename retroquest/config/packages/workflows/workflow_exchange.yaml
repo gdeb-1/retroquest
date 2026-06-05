@@ -1,0 +1,20 @@
+framework:
+    workflows:
+        exchange_status:
+            type: 'state_machine'
+            marking_store:
+                type: 'method'
+                property: 'status'
+            supports:
+                - App\Entity\Exchange
+            places: !php/enum App\Enum\ExchangeStatuses
+            transitions:
+                validate:
+                    from: !php/enum App\Enum\ExchangeStatuses::PENDING
+                    to:   !php/enum App\Enum\ExchangeStatuses::ACCEPTED
+                reject:
+                    from: !php/enum App\Enum\ExchangeStatuses::PENDING
+                    to:   !php/enum App\Enum\ExchangeStatuses::REJECTED
+                cancel:
+                    from: !php/enum App\Enum\ExchangeStatuses::PENDING
+                    to:   !php/enum App\Enum\ExchangeStatuses::CANCELLED
