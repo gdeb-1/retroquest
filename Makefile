@@ -8,6 +8,23 @@ CONSOLE = $(EXEC) php bin/console
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
+#BRANCHES
+datatable: ## go to datatable branch. 
+	git switch datatable-backend-paginated
+	$(MAKE) build-assets
+
+
+
+hub: ## go to the hub branch
+	git switch hub
+
+hub-recreate: ## go to hub branch and recreate database
+	$(MAKE) hub
+	$(MAKE) build-assets
+	$(MAKE) clear-cache
+	$(MAKE) db-recreate
+	$(MAKE) db-fixtures
+
 # Docker
 up: ## Start the containers
 	$(DOCKER_COMPOSE) up -d
