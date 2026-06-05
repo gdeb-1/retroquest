@@ -2,13 +2,17 @@
 
 namespace App\Controller\Collector\Exchange;
 
-use App\Entity\Exchange;
-use App\Enum\ExchangeStatuses;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Message\Command\Exchange\CancelExchangeCommand;
+use App\Exception\ExchangeNotFoundException;
+use App\Exception\UserNotFoundException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Messenger\Exception\HandlerFailedException;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[IsGranted('ROLE_COLLECTOR')]
@@ -16,32 +20,35 @@ class CancelExchangeController extends AbstractController
 {
     #[Route('/collector/exchange/cancel/{id}', name: 'app_collector_exchange_cancel', methods: ['POST'], options: ['expose' => true])]
     public function cancel(
-        Exchange $exchange,
+        int $id,
         Request $request,
-        EntityManagerInterface $entityManager
+        MessageBusInterface $messageBus
     ): Response {
-        /** @var \App\Entity\User $currentUser */
-        $currentUser = $this->getUser();
-
         $token = $request->request->get('_token');
-        if (!$this->isCsrfTokenValid('cancel_exchange_' . $exchange->getId(), $token)) {
+        if (!$this->isCsrfTokenValid('cancel_exchange_' . $id, $token)) {
             $this->addFlash('error', 'Le jeton de sécurité est invalide. Veuillez réessayer.');
             return $this->redirectToRoute('app_collector_exchange_sent');
         }
 
-        if ($exchange->getProposer() !== $currentUser) {
-            throw $this->createAccessDeniedException("Vous n'êtes pas autorisé à annuler cet échange.");
+        try {
+            $messageBus->dispatch(new CancelExchangeCommand($id, $this->getUser()->getId()));
+
+            $this->addFlash('success', "La proposition d'échange a bien été annulée.");
+        } catch (HandlerFailedException $e) {
+            $previous = $e->getPrevious();
+            if ($previous instanceof AccessDeniedException) {
+                throw $previous;
+            }
+            if ($previous instanceof ExchangeNotFoundException || $previous instanceof UserNotFoundException) {
+                throw new NotFoundHttpException($previous->getMessage(), $previous);
+            }
+            if ($previous instanceof \LogicException) {
+                $this->addFlash('error', $previous->getMessage());
+            } else {
+                throw $e;
+            }
         }
 
-        if ($exchange->getStatus() !== ExchangeStatuses::PENDING) {
-            $this->addFlash('error', "Cet échange ne peut pas être annulé car il n'est plus en attente.");
-            return $this->redirectToRoute('app_collector_exchange_sent');
-        }
-
-        $exchange->setStatus(ExchangeStatuses::CANCELLED);
-        $entityManager->flush();
-
-        $this->addFlash('success', "La proposition d'échange a bien été annulée.");
         return $this->redirectToRoute('app_collector_exchange_sent');
     }
 }
