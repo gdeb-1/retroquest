@@ -46,6 +46,7 @@ class RouteSecurityTest extends DatabaseWebTestCase
             ['/moderator/helloModerator'],
             ['/collector/myCollection'],
             ['/collector/GuildCatalog'],
+            ['/collector/GuildCatalog/data'],
             ['/collector/addCollectionItem'],
             ['/collector/game/1'],
             ['/collector/exchange/search'],

@@ -2,7 +2,6 @@
   <div class="card shadow-sm border-0 bg-white p-3">
     <div class="table-responsive">
       <DataTable 
-        :data="catalogData" 
         :columns="columns" 
         :options="options" 
         class="table table-striped table-hover border align-middle w-100"
@@ -17,13 +16,6 @@ import DataTablesCore from 'datatables.net-dt';
 import Routing from 'fos-router';
 
 DataTable.use(DataTablesCore);
-
-defineProps({
-  catalogData: {
-    type: Array,
-    required: true
-  }
-});
 
 const getRoute = (routeName, id) => {
   return Routing.generate(routeName, { id });
@@ -45,6 +37,11 @@ const columns = [
 ];
 
 const options = {
+  serverSide: true,
+  ajax: {
+    url: Routing.generate('app_collector_guild_catalog_data'),
+    type: 'GET'
+  },
   language: {
     search: "Rechercher :",
     lengthMenu: "Afficher _MENU_ éléments",
