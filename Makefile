@@ -13,7 +13,9 @@ datatable: ## go to datatable branch.
 	git switch datatable-backend-paginated
 	$(MAKE) build-assets
 
-
+messages: ## go to symfony messages branch. 
+	git switch symfony-messages
+# 	$(MAKE) build-assets
 
 hub: ## go to the hub branch
 	git switch hub
