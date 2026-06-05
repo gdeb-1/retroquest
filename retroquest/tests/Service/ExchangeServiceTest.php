@@ -8,6 +8,7 @@ use App\Entity\User;
 use App\Enum\ExchangeStatuses;
 use App\Exception\InvalidStateExchangeException;
 use App\Exception\NotEligibleExchangeException;
+use App\Service\ExchangeEligibilityService;
 use App\Service\ExchangeService;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -15,20 +16,22 @@ use PHPUnit\Framework\TestCase;
 class ExchangeServiceTest extends TestCase
 {
     private ExchangeService $exchangeService;
+    private ExchangeEligibilityService $exchangeEligibilityService;
 
     protected function setUp(): void
     {
         parent::setUp();
 
+        $this->exchangeEligibilityService = new ExchangeEligibilityService();
         $workflow = $this->createStub(\Symfony\Component\Workflow\WorkflowInterface::class);
-        
+
         $workflow->method('can')->willReturnCallback(function (Exchange $exchange, string $transition) {
             return $exchange->getStatus() === ExchangeStatuses::PENDING;
         });
 
         $workflow->method('apply')->willReturnCallback(function (Exchange $exchange, string $transition) {
             if ($transition === 'validate') {
-                $this->exchangeService->processExchangeTransfer($exchange);
+                $this->exchangeEligibilityService->processExchangeTransfer($exchange);
                 $exchange->setStatus(ExchangeStatuses::ACCEPTED);
                 
                 foreach ($exchange->getItems() as $item) {
@@ -44,14 +47,14 @@ class ExchangeServiceTest extends TestCase
             return $this->createStub(\Symfony\Component\Workflow\Marking::class);
         });
 
-        $this->exchangeService = new ExchangeService($workflow);
+        $this->exchangeService = new ExchangeService($this->exchangeEligibilityService, $workflow);
     }
 
     #[DataProvider('exchangeEligibilityProvider')]
     public function testIsDirectExchangeEligible(callable $setupCallback, bool $expectedResult): void
     {
         $exchange = $setupCallback();
-        $this->assertSame($expectedResult, $this->exchangeService->isDirectExchangeEligible($exchange));
+        $this->assertSame($expectedResult, $this->exchangeEligibilityService->isDirectExchangeEligible($exchange));
     }
 
     public static function exchangeEligibilityProvider(): array

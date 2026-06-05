@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace App\EventListener;
 
 use App\Entity\Exchange;
-use App\Service\ExchangeService;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use App\Service\ExchangeEligibilityService;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Workflow\Attribute\AsGuardListener;
 use Symfony\Component\Workflow\Attribute\AsTransitionListener;
@@ -17,8 +16,7 @@ use Symfony\Component\Workflow\WorkflowInterface;
 class ExchangeWorkflowListener
 {
     public function __construct(
-        #[Autowire(lazy: true)]
-        private ExchangeService $exchangeService,
+        private ExchangeEligibilityService $exchangeEligibilityService,
         #[Target('exchange_status')]
         private WorkflowInterface $exchangeWorkflow
     ) {}
@@ -31,7 +29,7 @@ class ExchangeWorkflowListener
             return;
         }
 
-        if (!$this->exchangeService->isDirectExchangeEligible($exchange)) {
+        if (!$this->exchangeEligibilityService->isDirectExchangeEligible($exchange)) {
             $event->setBlocked(true, "Cet échange n'est pas éligible et ne peut pas être validé.");
         }
     }
@@ -45,7 +43,7 @@ class ExchangeWorkflowListener
         }
 
         // 1. Swap ownership of items
-        $this->exchangeService->processExchangeTransfer($exchange);
+        $this->exchangeEligibilityService->processExchangeTransfer($exchange);
 
         // 2. Cancel conflicting pending exchanges
         foreach ($exchange->getItems() as $item) {

@@ -8,7 +8,7 @@ use App\Enum\ExchangeStatuses;
 use App\Form\ExchangeType;
 use App\Repository\CollectionItemRepository;
 use App\Repository\ExchangeRepository;
-use App\Service\ExchangeService;
+use App\Service\ExchangeEligibilityService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -24,7 +24,7 @@ class ProposeExchangeController extends AbstractController
         CollectionItem $receiverItem,
         Request $request,
         EntityManagerInterface $entityManager,
-        ExchangeService $exchangeService,
+        ExchangeEligibilityService $exchangeEligibilityService,
         CollectionItemRepository $collectionItemRepository,
         ExchangeRepository $exchangeRepository
     ): Response {
@@ -65,7 +65,7 @@ class ProposeExchangeController extends AbstractController
                 $exchange->addItem($item);
             }
 
-            if ($exchangeService->isDirectExchangeEligible($exchange)) {
+            if ($exchangeEligibilityService->isDirectExchangeEligible($exchange)) {
                 $entityManager->persist($exchange);
                 $entityManager->flush();
 
