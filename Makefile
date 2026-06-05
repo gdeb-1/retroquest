@@ -17,6 +17,9 @@ messages: ## go to symfony messages branch.
 	git switch symfony-messages
 # 	$(MAKE) build-assets
 
+messages-with-workflow: 
+	git switch symfony-messages-workflow
+
 hub: ## go to the hub branch
 	git switch hub
 
